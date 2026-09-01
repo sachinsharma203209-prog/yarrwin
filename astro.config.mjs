@@ -12,7 +12,8 @@ import tailwindcss from "@tailwindcss/vite";
  * - Tailwind CSS v4 runs as a Vite plugin (CSS-first config in src/styles/global.css).
  */
 export default defineConfig({
-  site: "https://yarrwin.com",
+  site: "https://sachinsharma203209-prog.github.io",
+  base: "/yarrwin/",
   trailingSlash: "ignore",
   integrations: [sitemap()],
   vite: {
