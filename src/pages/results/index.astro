@@ -1,0 +1,241 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import SectionHeading from "../../components/SectionHeading.astro";
+import ResultsTable from "../../components/ResultsTable.astro";
+import LiveBoard from "../../components/LiveBoard.astro";
+import FaqAccordion from "../../components/FaqAccordion.astro";
+import CtaBand from "../../components/CtaBand.astro";
+import { history } from "../../lib/simulator";
+import { rowsFor } from "../../lib/rows";
+
+const COUNTS = { wingo: 20, k3: 15, "5d": 15 } as const;
+
+const wingoRows = rowsFor("wingo", history("wingo", COUNTS.wingo));
+const k3Rows = rowsFor("k3", history("k3", COUNTS.k3));
+const fiveDRows = rowsFor("5d", history("5d", COUNTS["5d"]));
+
+const breadcrumb = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: [
+    { "@type": "ListItem", position: 1, name: "Home", item: "https://yarrwin.com/" },
+    { "@type": "ListItem", position: 2, name: "Results", item: "https://yarrwin.com/results/" },
+  ],
+};
+
+const latestSchema = {
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  name: "Latest WinGo results",
+  itemListElement: wingoRows.slice(0, 10).map((r, i) => ({
+    "@type": "ListItem",
+    position: i + 1,
+    name: `WinGo period ${r.cells[0].text} — number ${r.cells[1].text} (${r.cells[2].text}, ${r.cells[3].text})`,
+    url: "https://yarrwin.com/results/",
+  })),
+};
+
+const resultFaqs = [
+  {
+    q: "How far back does the results archive go?",
+    a: "Every period ever drawn is stored permanently — WinGo, K3 and 5D alike. Rows are never edited or removed after publication, so the archive doubles as the platform's public audit log.",
+  },
+  {
+    q: "What do the colour and size columns mean?",
+    a: "For WinGo, each digit 0–9 settles a colour (Green, Red, or Violet for digits 0 and 5) and a size (Big 5–9, Small 0–4). For K3 and 5D, the size column refers to the sum of the dice or digits, and the parity column shows Odd or Even.",
+  },
+  {
+    q: "How fast are results published?",
+    a: "Results are published to the archive within three seconds of a period closing. The live board at the top of this page counts down to each next draw and updates the moment a period settles.",
+  },
+  {
+    q: "Can I verify that a result was not altered?",
+    a: "Yes. Each period is committed as a hash before the draw and revealed alongside the result. Compare the commitment published before the window closed with the revealed seed in the archive — identical hashes prove the outcome was fixed in advance and never modified.",
+  },
+];
+
+const faqSchema = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: resultFaqs.map((f) => ({
+    "@type": "Question",
+    name: f.q,
+    acceptedAnswer: { "@type": "Answer", text: f.a },
+  })),
+};
+---
+
+<BaseLayout
+  title="Yarrwin Results — Live & Historical WinGo, K3, 5D Draws"
+  description="Live and archived results for every Yarrwin game: WinGo colour prediction periods, K3 dice sums and 5D digit matrices with colours, sizes and UTC timestamps."
+  ogImage="/og/results.png"
+  keywords="Wingo results, Yarrwin results archive, K3 lottery results, 5D lottery results, colour prediction history"
+  schema={[breadcrumb, latestSchema, faqSchema]}
+>
+  <!-- Page head -->
+  <section class="container-site pt-10 md:pt-14">
+    <div class="max-w-3xl">
+      <nav aria-label="Breadcrumb" class="mb-6 text-sm text-mist-400">
+        <ol class="flex items-center gap-2">
+          <li><a href="/" class="transition hover:text-brand-300">Home</a></li>
+          <li aria-hidden="true">/</li>
+          <li aria-current="page" class="text-mist-200">Results</li>
+        </ol>
+      </nav>
+      <h1 class="font-display text-4xl font-extrabold leading-[1.08] tracking-tight md:text-5xl">
+        Yarrwin results — every draw, <span class="text-gradient-brand">on the record</span>
+      </h1>
+      <p class="mt-6 text-lg leading-relaxed text-mist-300">
+        WinGo periods settle every minute, K3 every three, 5D every five — and each one is
+        published here with its full outcome: winning number, colour, size and UTC
+        timestamp. Results are written once by the draw itself and never edited.
+      </p>
+    </div>
+  </section>
+
+  <!-- Live board -->
+  <section class="container-site mt-12" aria-label="Live draws and countdowns">
+    <LiveBoard />
+  </section>
+
+  <!-- Archive tables -->
+  <section id="archive" class="section-pad">
+    <div class="container-site">
+      <SectionHeading
+        eyebrow="Results archive"
+        title="Historical draw tables"
+        sub="All three tables below are rendered server-side for crawlers and humans alike. Switch tabs to move between games, or deep-link straight to a table with #wingo, #k3 or #5d."
+      />
+
+      <div
+        id="result-tabs"
+        role="tablist"
+        aria-label="Choose a game's results"
+        class="glass mt-8 inline-flex max-w-full items-center gap-1 overflow-x-auto rounded-full p-1.5"
+      >
+        <button class="tab-btn" role="tab" id="tab-wingo" aria-selected="true" aria-controls="panel-wingo" data-tab="wingo">WinGo</button>
+        <button class="tab-btn" role="tab" id="tab-k3" aria-selected="false" aria-controls="panel-k3" data-tab="k3" tabindex="-1">K3 Lottery</button>
+        <button class="tab-btn" role="tab" id="tab-5d" aria-selected="false" aria-controls="panel-5d" data-tab="5d" tabindex="-1">5D Lottery</button>
+      </div>
+
+      <div class="mt-6">
+        <section
+          id="panel-wingo"
+          role="tabpanel"
+          aria-labelledby="tab-wingo"
+          data-panel="wingo"
+          class="scroll-mt-28"
+        >
+          <h3 class="mb-4 font-display text-lg font-bold">
+            WinGo 1-minute results <span class="text-mist-500">— latest {COUNTS.wingo} periods</span>
+          </h3>
+          <ResultsTable
+            caption="WinGo 1-minute results: period, winning number, colour, size and UTC settlement time"
+            headers={["Period", "Number", "Colour", "Size", "Time (UTC)"]}
+            rows={wingoRows}
+          />
+          <p class="mt-4 text-sm leading-relaxed text-mist-400">
+            WinGo settles a digit from 0–9 every 60 seconds. Digits 1, 3, 7, 9 pay Green; 2, 4, 6, 8 pay Red; 0 and 5 carry the 4.5× Violet premium. Sizes split at 5 — Big from 5–9, Small from 0–4.
+          </p>
+        </section>
+
+        <section
+          id="panel-k3"
+          role="tabpanel"
+          aria-labelledby="tab-k3"
+          data-panel="k3"
+          class="hidden scroll-mt-28"
+        >
+          <h3 class="mb-4 font-display text-lg font-bold">
+            K3 lottery results <span class="text-mist-500">— latest {COUNTS.k3} periods</span>
+          </h3>
+          <ResultsTable
+            caption="K3 lottery results: period, three dice faces, sum, size, parity and UTC settlement time"
+            headers={["Period", "Dice", "Sum", "Size", "Parity", "Time (UTC)"]}
+            rows={k3Rows}
+          />
+          <p class="mt-4 text-sm leading-relaxed text-mist-400">
+            K3 draws three dice every three minutes. Sums of 11–18 settle Big, 3–10 settle Small; parity follows the total. The full 216-combination distribution makes middle sums the statistical centre of gravity.
+          </p>
+        </section>
+
+        <section
+          id="panel-5d"
+          role="tabpanel"
+          aria-labelledby="tab-5d"
+          data-panel="5d"
+          class="hidden scroll-mt-28"
+        >
+          <h3 class="mb-4 font-display text-lg font-bold">
+            5D lottery results <span class="text-mist-500">— latest {COUNTS["5d"]} periods</span>
+          </h3>
+          <ResultsTable
+            caption="5D lottery results: period, digits A through E, digit sum, size and UTC settlement time"
+            headers={["Period", "Digits (A–E)", "Sum", "Size", "Time (UTC)"]}
+            rows={fiveDRows}
+          />
+          <p class="mt-4 text-sm leading-relaxed text-mist-400">
+            5D draws five digits — positions A to E — every five minutes. The sum column totals all five digits: sums of 23–45 settle Big, 0–22 settle Small. Each digit is also an independent 9× single-number market.
+          </p>
+        </section>
+      </div>
+
+      <p class="mt-8 flex items-start gap-2 text-xs leading-relaxed text-mist-500">
+        <span class="chip chip-neutral shrink-0">Demo data</span>
+        This demonstration build generates deterministic simulated results so you can see the
+        exact production layout. Connect your live results feed in
+        <span class="num">src/lib/simulator.ts</span> — no component changes required.
+      </p>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="section-pad bg-ink-850/40">
+    <div class="container-site grid gap-10 lg:grid-cols-[0.9fr_1.4fr]">
+      <SectionHeading
+        eyebrow="Archive FAQ"
+        title="How the archive works"
+        sub="Publication speed, retention policy, and how to independently verify any period."
+      />
+      <FaqAccordion items={resultFaqs} />
+    </div>
+  </section>
+
+  <CtaBand
+    title="Watch the next draw close in real time"
+    sub="Pick your game, follow the countdown, and see results land within seconds on the live board."
+  />
+</BaseLayout>
+
+<script>
+  const tablist = document.getElementById("result-tabs");
+  const tabs = Array.from(tablist?.querySelectorAll<HTMLButtonElement>("[role='tab']") ?? []);
+  const panels = Array.from(document.querySelectorAll<HTMLElement>("[data-panel]"));
+
+  const VALID = new Set(tabs.map((t) => t.dataset.tab));
+
+  function activate(name: string, focus = false) {
+    for (const tab of tabs) {
+      const selected = tab.dataset.tab === name;
+      tab.setAttribute("aria-selected", String(selected));
+      tab.tabIndex = selected ? 0 : -1;
+      if (selected && focus) tab.focus();
+    }
+    for (const panel of panels) {
+      panel.classList.toggle("hidden", panel.dataset.panel !== name);
+    }
+    if (history.replaceState) history.replaceState(null, "", `#${name}`);
+  }
+
+  tabs.forEach((tab) => tab.addEventListener("click", () => activate(tab.dataset.tab ?? "")));
+
+  tablist?.addEventListener("keydown", (e) => {
+    const i = tabs.findIndex((t) => t.getAttribute("aria-selected") === "true");
+    if (e.key === "ArrowRight") activate(tabs[(i + 1) % tabs.length].dataset.tab ?? "", true);
+    if (e.key === "ArrowLeft") activate(tabs[(i - 1 + tabs.length) % tabs.length].dataset.tab ?? "", true);
+  });
+
+  // Deep links: /results/#k3 opens the K3 table directly.
+  const hash = window.location.hash.replace("#", "");
+  if (hash && VALID.has(hash)) activate(hash);
+</script>

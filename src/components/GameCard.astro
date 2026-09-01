@@ -1,0 +1,73 @@
+---
+import Icon from "./Icon.astro";
+
+interface Props {
+  icon: "wingo" | "k3" | "5d" | "aviator";
+  name: string;
+  tag: string;
+  tagTone?: "chip-green" | "chip-gold" | "chip-violet" | "chip-red";
+  description: string;
+  bullets: string[];
+  resultsHref: string;
+  accent: "brand" | "gold" | "violet" | "red";
+}
+
+const {
+  icon,
+  name,
+  tag,
+  tagTone = "chip-neutral",
+  description,
+  bullets,
+  resultsHref,
+  accent,
+} = Astro.props;
+
+const accentBorder: Record<Props["accent"], string> = {
+  brand: "hover:border-brand-500/40",
+  gold: "hover:border-gold-400/40",
+  violet: "hover:border-win-violet/40",
+  red: "hover:border-win-red/40",
+};
+
+const accentIcon: Record<Props["accent"], string> = {
+  brand: "bg-brand-500/12 text-brand-300",
+  gold: "bg-gold-400/12 text-gold-300",
+  violet: "bg-win-violet/12 text-[#c4b0fd]",
+  red: "bg-win-red/12 text-[#ff8a94]",
+};
+---
+
+<article class={`glass group flex flex-col rounded-3xl p-6 shadow-card transition duration-300 hover:-translate-y-1 ${accentBorder[accent]}`}>
+  <div class="flex items-center justify-between">
+    <span class={`grid h-11 w-11 place-items-center rounded-xl ${accentIcon[accent]}`}>
+      <Icon name={icon} class="h-5 w-5" />
+    </span>
+    <span class={`chip ${tagTone}`}>{tag}</span>
+  </div>
+
+  <h3 class="mt-5 font-display text-xl font-bold tracking-tight">{name}</h3>
+  <p class="mt-2.5 flex-1 text-sm leading-relaxed text-mist-400">{description}</p>
+
+  <ul class="mt-4 space-y-2">
+    {
+      bullets.map((b) => (
+        <li class="flex items-start gap-2 text-sm text-mist-300">
+          <Icon name="check" class="mt-0.5 h-4 w-4 shrink-0 text-brand-400" />
+          <span>{b}</span>
+        </li>
+      ))
+    }
+  </ul>
+
+  <div class="mt-6 flex items-center justify-between border-t border-white/5 pt-4">
+    <a
+      href={resultsHref}
+      class="inline-flex items-center gap-1.5 text-sm font-semibold text-brand-300 transition hover:text-brand-200"
+    >
+      View results
+      <Icon name="arrow-right" class="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
+    </a>
+    <a href="/games/" class="text-sm text-mist-400 transition hover:text-mist-200">Rules</a>
+  </div>
+</article>

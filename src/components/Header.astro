@@ -1,0 +1,106 @@
+---
+import Logo from "./Logo.astro";
+import Icon from "./Icon.astro";
+
+const path = Astro.url.pathname;
+
+const links = [
+  { href: "/games/", label: "Games" },
+  { href: "/results/", label: "Results" },
+  { href: "/guide/how-to-play/", label: "How to Play" },
+];
+
+const isActive = (href: string) => path === href || path.startsWith(href);
+---
+
+<header id="site-header" class="fixed inset-x-0 top-0 z-50">
+  <div class="container-site">
+    <nav class="nav-shell mt-3 flex items-center justify-between gap-4 rounded-full py-2 pl-4 pr-2 md:pl-5" aria-label="Main navigation">
+      <Logo />
+
+      <ul class="hidden items-center gap-1 md:flex">
+        {
+          links.map((link) => (
+            <li>
+              <a href={link.href} class={`nav-link ${isActive(link.href) ? "is-active" : ""}`} aria-current={isActive(link.href) ? "page" : undefined}>
+                {link.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+
+      <div class="hidden items-center gap-2 md:flex">
+        <a href="/guide/how-to-play/#step-1" class="btn btn-ghost btn-sm">Register</a>
+        <a href="/games/" class="btn btn-primary btn-sm">
+          Play Now
+          <Icon name="arrow-right" class="h-4 w-4" />
+        </a>
+      </div>
+
+      <button
+        id="menu-toggle"
+        type="button"
+        class="grid h-11 w-11 place-items-center rounded-full text-mist-200 transition hover:bg-white/5 md:hidden"
+        aria-expanded="false"
+        aria-controls="mobile-menu"
+        aria-label="Toggle navigation menu"
+      >
+        <Icon name="menu" class="h-6 w-6" data-menu-open />
+        <Icon name="close" class="hidden h-6 w-6" data-menu-close />
+      </button>
+    </nav>
+
+    <div
+      id="mobile-menu"
+      class="glass-deep mt-2 hidden rounded-3xl p-4 md:hidden"
+    >
+      <ul class="flex flex-col gap-1">
+        {
+          links.map((link) => (
+            <li>
+              <a href={link.href} class={`block rounded-2xl px-4 py-3 text-sm font-medium transition ${isActive(link.href) ? "bg-white/10 text-brand-300" : "text-mist-300 hover:bg-white/5 hover:text-mist-100"}`}>
+                {link.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+      <div class="mt-3 grid grid-cols-2 gap-2 border-t border-white/8 pt-3">
+        <a href="/guide/how-to-play/#step-1" class="btn btn-ghost btn-sm">Register</a>
+        <a href="/games/" class="btn btn-primary btn-sm">Play Now</a>
+      </div>
+    </div>
+  </div>
+</header>
+
+<script>
+  const header = document.getElementById("site-header");
+  const toggle = document.getElementById("menu-toggle");
+  const menu = document.getElementById("mobile-menu");
+  const openIcon = toggle?.querySelector("[data-menu-open]");
+  const closeIcon = toggle?.querySelector("[data-menu-close]");
+
+  const setMenu = (open: boolean) => {
+    menu?.classList.toggle("hidden", !open);
+    toggle?.setAttribute("aria-expanded", String(open));
+    openIcon?.classList.toggle("hidden", open);
+    closeIcon?.classList.toggle("hidden", !open);
+  };
+
+  const onScroll = () => header?.classList.toggle("is-scrolled", window.scrollY > 8);
+  onScroll();
+  window.addEventListener("scroll", onScroll, { passive: true });
+
+  toggle?.addEventListener("click", () => {
+    setMenu(menu?.classList.contains("hidden") ?? false);
+  });
+
+  // Close the panel when a link inside it is clicked or on escape.
+  menu?.addEventListener("click", (e) => {
+    if ((e.target as HTMLElement).closest("a")) setMenu(false);
+  });
+  window.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") setMenu(false);
+  });
+</script>

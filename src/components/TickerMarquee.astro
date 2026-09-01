@@ -1,0 +1,88 @@
+---
+/**
+ * TickerMarquee — SEO-rendered strip of the latest simulated results across
+ * all games, duplicated for a seamless CSS marquee loop. Pauses on hover;
+ * disabled under prefers-reduced-motion.
+ */
+import { aviatorRounds, history, wingoColors } from "../lib/simulator";
+
+type Chip = {
+  game: string;
+  period: string;
+  kind: "wingo" | "k3" | "5d" | "aviator";
+  value: string;
+  tone: string;
+};
+
+const ballTone = (colors: ReturnType<typeof wingoColors>) =>
+  colors.length === 2 ? (colors[0] === "red" ? "dual-red" : "dual-green") : colors[0];
+
+const chips: Chip[] = [];
+
+for (const d of history("wingo", 8)) {
+  if (d.game !== "wingo") continue;
+  chips.push({
+    game: "WinGo",
+    period: `#${d.period.slice(-5)}`,
+    kind: "wingo",
+    value: String(d.number),
+    tone: ballTone(d.colors),
+  });
+}
+for (const d of history("k3", 6)) {
+  if (d.game !== "k3") continue;
+  chips.push({
+    game: "K3",
+    period: `#${d.period.slice(-5)}`,
+    kind: "k3",
+    value: `${d.dice.join("·")} S${d.sum}`,
+    tone: d.size === "Big" ? "gold" : "neutral",
+  });
+}
+for (const d of history("5d", 5)) {
+  if (d.game !== "5d") continue;
+  chips.push({
+    game: "5D",
+    period: `#${d.period.slice(-5)}`,
+    kind: "5d",
+    value: `${d.digits.join(" ")} S${d.sum}`,
+    tone: d.size === "Big" ? "gold" : "neutral",
+  });
+}
+for (const r of aviatorRounds(6)) {
+  chips.push({
+    game: "Aviator",
+    period: r.round,
+    kind: "aviator",
+    value: `${r.multiplier.toFixed(2)}×`,
+    tone: r.multiplier >= 2 ? "gold" : "red",
+  });
+}
+---
+
+<div class="marquee border-y border-white/5 bg-ink-900" role="region" aria-label="Latest results ticker — simulated demonstration feed">
+  <div class="marquee-track py-2.5">
+    {
+      [0, 1].map((copy) => (
+        <div class="marquee-copy" aria-hidden={copy === 1 ? "true" : undefined}>
+          {chips.map((c) => (
+            <span class="ticker-chip">
+              <span class="text-[10px] font-bold uppercase tracking-[0.14em] text-mist-500">{c.game}</span>
+              <span class="num text-mist-300">{c.period}</span>
+              {c.kind === "wingo" && (
+                <span class={`ball h-5 w-5 text-[11px] ball-${c.tone}`}>{c.value}</span>
+              )}
+              {c.kind === "k3" && <span class="num text-mist-200">{c.value}</span>}
+              {c.kind === "5d" && <span class="num text-mist-200">{c.value}</span>}
+              {c.kind === "aviator" && (
+                <span class={`num font-bold ${c.tone === "gold" ? "text-gold-300" : "text-win-red"}`}>{c.value}</span>
+              )}
+            </span>
+          ))}
+        </div>
+      ))
+    }
+  </div>
+  <div class="pointer-events-none absolute inset-y-0 left-0 w-20 bg-gradient-to-r from-ink-900 to-transparent" aria-hidden="true"></div>
+  <div class="pointer-events-none absolute inset-y-0 right-0 w-20 bg-gradient-to-l from-ink-900 to-transparent" aria-hidden="true"></div>
+</div>

@@ -1,0 +1,19 @@
+---
+/** Yarrwin wordmark + "Y" glyph. Links home; announced via aria-label. */
+interface Props {
+  class?: string;
+}
+const { class: className = "" } = Astro.props;
+---
+
+<a href="/" class={`group inline-flex items-center gap-2.5 ${className}`} aria-label="Yarrwin — home">
+  <span class="relative grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-brand-400 to-brand-600 shadow-glow-brand transition-transform duration-200 group-hover:scale-105">
+    <svg viewBox="0 0 24 24" class="h-5 w-5 text-ink-950" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M6 6l6 7 6-7"></path>
+      <path d="M12 13v6"></path>
+    </svg>
+  </span>
+  <span class="font-display text-lg font-bold tracking-tight text-mist-100">
+    Yarrwin<span class="text-brand-400">.</span>
+  </span>
+</a>

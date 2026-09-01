@@ -1,0 +1,86 @@
+---
+/**
+ * ResultsTable — accessible, server-rendered results table.
+ * Cells are pre-built view models (see src/lib/rows.ts) so the homepage
+ * preview and the /results/ archive render identically.
+ */
+import type { Cell, ResultsRow } from "../lib/rows";
+
+interface Props {
+  caption: string;
+  headers: string[];
+  rows: ResultsRow[];
+}
+
+const { caption, headers, rows } = Astro.props;
+
+const CHIP_KINDS: Cell["kind"][] = [
+  "chip-green",
+  "chip-red",
+  "chip-violet",
+  "chip-gold",
+  "chip-neutral",
+];
+const BALL_KINDS: Cell["kind"][] = [
+  "ball-green",
+  "ball-red",
+  "ball-violet",
+  "ball-dual-red",
+  "ball-dual-green",
+];
+
+const isChip = (kind?: Cell["kind"]) => kind !== undefined && CHIP_KINDS.includes(kind);
+const isBall = (kind?: Cell["kind"]) => kind !== undefined && BALL_KINDS.includes(kind);
+
+const textClass = (kind?: Cell["kind"]): string => {
+  switch (kind) {
+    case "text-strong":
+      return "font-semibold text-mist-100";
+    case "text-muted":
+      return "text-mist-400";
+    case "mono":
+      return "num text-mist-200";
+    case "gold":
+      return "text-gold-300";
+    default:
+      return "text-mist-200";
+  }
+};
+---
+
+<div class="glass scroll-slim relative overflow-hidden rounded-3xl">
+  <div class="overflow-x-auto">
+    <table class="w-full min-w-[680px] text-left text-sm">
+      <caption class="sr-only">{caption}</caption>
+      <thead>
+        <tr class="border-b border-white/8 bg-white/[0.03]">
+          {
+            headers.map((h) => (
+              <th scope="col" class="px-5 py-3.5 text-xs font-semibold uppercase tracking-[0.14em] text-mist-400">
+                {h}
+              </th>
+            ))
+          }
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-white/5">
+        {
+          rows.map((row) => (
+            <tr class="transition-colors hover:bg-white/[0.03]">
+              {row.cells.map((c) => (
+                <td class="px-5 py-3">
+                  {isBall(c.kind) && <span class={`ball ${c.kind}`}>{c.text}</span>}
+                  {isChip(c.kind) && <span class={`chip ${c.kind}`}>{c.text}</span>}
+                  {!isBall(c.kind) && !isChip(c.kind) && (
+                    <span class={textClass(c.kind)}>{c.text}</span>
+                  )}
+                  {c.sr && <span class="sr-only">{c.sr}</span>}
+                </td>
+              ))}
+            </tr>
+          ))
+        }
+      </tbody>
+    </table>
+  </div>
+</div>

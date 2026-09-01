@@ -1,0 +1,251 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import SectionHeading from "../../components/SectionHeading.astro";
+import Icon from "../../components/Icon.astro";
+import FaqAccordion from "../../components/FaqAccordion.astro";
+import CtaBand from "../../components/CtaBand.astro";
+
+const breadcrumb = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: [
+    { "@type": "ListItem", position: 1, name: "Home", item: "https://yarrwin.com/" },
+    { "@type": "ListItem", position: 2, name: "Guide", item: "https://yarrwin.com/guide/how-to-play/" },
+  ],
+};
+
+const steps = [
+  {
+    id: "step-1",
+    icon: "user" as const,
+    title: "Create your account",
+    paragraphs: [
+      "Registration on Yarrwin takes less than a minute: choose a strong, unique password, confirm your email address, and your account is live. Use an email you actually check — draw notifications and withdrawal confirmations are sent there, and it is your recovery path if you ever lose access.",
+      "You must be 18 or older to register, and you are responsible for confirming that online gaming is legal where you live. The sign-up flow asks you to confirm both — take those two checkboxes seriously, they are the foundation of safe play.",
+    ],
+    tip: "Skip password reuse entirely. A password manager generates and remembers a credential no other site holds — one breach elsewhere stays elsewhere.",
+  },
+  {
+    id: "step-2",
+    icon: "key" as const,
+    title: "Secure your account",
+    paragraphs: [
+      "Before your first deposit, turn on two-factor authentication from your dashboard. It binds a second factor to logins and — more importantly — to withdrawals, so a leaked password alone can never move your balance. The setup takes two minutes with any authenticator app.",
+      "Learn the platform's anti-phishing basics in the same sitting: Yarrwin will never ask for your password or 2FA codes by email or chat, every genuine session lives on the official domain, and support threads are always visible inside your account. When in doubt, stop and log in directly rather than following a link.",
+    ],
+    tip: "Check for the padlock and the exact domain every session. Most account losses in this industry begin with a lookalike domain, not a technical breach.",
+  },
+  {
+    id: "step-3",
+    icon: "wallet" as const,
+    title: "Fund your wallet",
+    paragraphs: [
+      "Your Yarrwin wallet is an itemised ledger: every deposit, bet, win and withdrawal appears as its own line with a timestamp. Deposits post as soon as your payment provider confirms, and you can set a personal deposit limit the moment you top up — a ceiling you choose while calm is worth ten you promise yourself mid-session.",
+      "Withdrawals mirror the deposit flow in reverse: request a cash-out, confirm it explicitly (2FA-protected), and the platform queues it for processing. Balance updates from settled draws are instant; pending withdrawals are always visible and cancellable while queued.",
+    ],
+    tip: "Budget in sessions, not bets: decide the amount you are happy to spend today, deposit exactly that, and treat a refill as tomorrow's decision — not tonight's.",
+  },
+  {
+    id: "step-4",
+    icon: "chart" as const,
+    title: "Understand the games & odds",
+    paragraphs: [
+      "Read one game guide before your first stake — the Games Hub documents WinGo, K3, 5D and Aviator with full market lists and illustrative payouts. Notice the pattern across all of them: frequent markets pay around 1:1, exotic markets pay multiples precisely because they rarely land.",
+      "Spend five minutes in the results archive watching real periods close. Seeing the rhythm of draws — and how often long-shot outcomes miss — builds the intuition that payout tables alone never teach. It is free, requires no account, and it is the single best-kept habit of experienced players.",
+    ],
+    tip: "Start with the steady markets: WinGo colours, K3 Big/Small, 5D sums. Learn the cadence at 1:1 odds before paying for variance elsewhere.",
+  },
+  {
+    id: "step-5",
+    icon: "bolt" as const,
+    title: "Place your first bet",
+    paragraphs: [
+      "Open a game, pick your market, and enter a stake — the confirmation screen shows the market, the payout multiple and the current period's countdown before anything is committed. Once the window locks, the draw runs on its own: settlement lands in under three seconds and your wallet reflects the outcome immediately.",
+      "Treat your first bets as tuition, not income: minimum stakes, fixed size, and a hard stop after a set number of periods. The goal of a first session is to learn the flow — betting window, lock, reveal, settlement — with zero pressure on the outcome.",
+    ],
+    tip: "One market per period while learning. Splitting attention across lobbies is how fixed staking plans quietly dissolve.",
+  },
+  {
+    id: "step-6",
+    icon: "archive" as const,
+    title: "Track results & withdraw",
+    paragraphs: [
+      "Every settled period appears in the public results archive with its number, colour, size and UTC timestamp, and every one of your own bets appears in your wallet ledger. Cross-checking the two is your personal audit trail — the same data the platform's provably fair commitments are built on.",
+      "When you finish a session ahead — or simply done for the day — withdraw. The confirmation flow is deliberate by design: one extra step that turns 'I'll cash out later' into a decision you make on purpose. Balance in your wallet is yours; balance on the table is in play.",
+    ],
+    tip: "Withdrawals are the habit that separates entertainment from chasing. A small, frequent cash-out rhythm beats one heroic session every time.",
+  },
+];
+
+const guideFaqs = [
+  {
+    q: "Do I need to deposit to explore Yarrwin?",
+    a: "No. The games hub, rules, strategy guides and the full results archive are all open without an account. Deposits only become relevant when you decide to place real stakes.",
+  },
+  {
+    q: "What is the minimum first deposit?",
+    a: "The platform keeps minimums deliberately low so a first session costs little. Your dashboard shows the current minimum for your payment method before you confirm anything, and you can set a personal deposit cap during the same step.",
+  },
+  {
+    q: "How long do withdrawals take?",
+    a: "Withdrawals are queued as soon as you confirm them with 2FA. Processing times depend on your payment provider and are shown at confirmation time; the request itself stays visible and cancellable in your wallet while it is queued.",
+  },
+  {
+    q: "What should I do if play stops feeling fun?",
+    a: "Stop and use the tools: session limits, deposit caps and self-exclusion are all available from your dashboard without talking to anyone. If you need outside support, contact a recognised responsible-gaming organisation in your country — taking a break early is always the right call.",
+  },
+];
+
+const faqSchema = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: guideFaqs.map((f) => ({
+    "@type": "Question",
+    name: f.q,
+    acceptedAnswer: { "@type": "Answer", text: f.a },
+  })),
+};
+
+const howToSchema = {
+  "@context": "https://schema.org",
+  "@type": "HowTo",
+  name: "How to play on Yarrwin",
+  description: "A six-step beginner guide to registering, securing, funding and playing responsibly on the Yarrwin online gaming and lottery results platform.",
+  step: steps.map((s, i) => ({
+    "@type": "HowToStep",
+    position: i + 1,
+    name: s.title,
+    text: s.paragraphs.join(" "),
+    url: `https://yarrwin.com/guide/how-to-play/#${s.id}`,
+  })),
+};
+---
+
+<BaseLayout
+  title="How to Play on Yarrwin — Beginner's Guide to Safe Gaming"
+  description="Step-by-step beginner guide: register securely, fund your wallet, understand WinGo & lottery odds, place your first bet and withdraw safely on Yarrwin."
+  ogImage="/og/guide.png"
+  keywords="how to play Yarrwin, WinGo beginner guide, online lottery tutorial, safe gameplay guide, wallet management"
+  schema={[breadcrumb, faqSchema, howToSchema]}
+>
+  <!-- Page head -->
+  <section class="container-site pt-10 md:pt-14">
+    <div class="max-w-3xl">
+      <nav aria-label="Breadcrumb" class="mb-6 text-sm text-mist-400">
+        <ol class="flex items-center gap-2">
+          <li><a href="/" class="transition hover:text-brand-300">Home</a></li>
+          <li aria-hidden="true">/</li>
+          <li aria-current="page" class="text-mist-200">How to Play</li>
+        </ol>
+      </nav>
+      <h1 class="font-display text-4xl font-extrabold leading-[1.08] tracking-tight md:text-5xl">
+        How to play on Yarrwin — the <span class="text-gradient-brand">beginner's guide</span>
+      </h1>
+      <p class="mt-6 text-lg leading-relaxed text-mist-300">
+        Six steps from an empty browser tab to your first verified draw: registration,
+        account security, wallet management, understanding odds, placing a first bet and
+        cashing out. Every step includes the safety habit that experienced players consider
+        non-negotiable.
+      </p>
+      <div class="mt-8 flex flex-wrap gap-2">
+        {
+          steps.map((s, i) => (
+            <a href={`#${s.id}`} class="chip chip-neutral transition hover:border-brand-500/40 hover:text-brand-300">
+              <span class="num text-brand-300">{i + 1}</span>
+              {s.title}
+            </a>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- Steps -->
+  <section class="section-pad">
+    <div class="container-site flex flex-col gap-6">
+      {
+        steps.map((s, i) => (
+          <article id={s.id} class="glass scroll-mt-28 rounded-3xl p-6 shadow-card md:p-8">
+            <div class="flex flex-wrap items-center gap-4">
+              <span class="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-brand-500/12 text-brand-300">
+                <Icon name={s.icon} class="h-5 w-5" />
+              </span>
+              <h2 class="font-display text-2xl font-extrabold tracking-tight">
+                <span class="num mr-2 text-mist-500">{`0${i + 1}`}</span>
+                {s.title}
+              </h2>
+            </div>
+            {s.paragraphs.map((p) => (
+              <p class="mt-4 leading-relaxed text-mist-300">{p}</p>
+            ))}
+            <aside class="mt-5 flex items-start gap-3 rounded-2xl border border-gold-400/25 bg-gold-400/8 p-4">
+              <Icon name="sparkles" class="mt-0.5 h-4 w-4 shrink-0 text-gold-300" />
+              <p class="text-sm leading-relaxed text-mist-300">
+                <strong class="font-semibold text-gold-300">Pro tip:</strong> {s.tip}
+              </p>
+            </aside>
+          </article>
+        ))
+      }
+    </div>
+  </section>
+
+  <!-- Play safe -->
+  <section id="play-safe" class="section-pad scroll-mt-28 bg-ink-850/40">
+    <div class="container-site grid gap-10 lg:grid-cols-[1.1fr_1fr]">
+      <div>
+        <p class="eyebrow"><Icon name="shield" class="h-3.5 w-3.5" /> Responsible gaming</p>
+        <h2 class="mt-4 font-display text-3xl font-extrabold tracking-tight">Play safe by design</h2>
+        <p class="mt-5 leading-relaxed text-mist-300">
+          Yarrwin is built for entertainment, and the safest players are the ones who treat
+          it that way from day one. Fast games are designed to be exciting — that same
+          speed makes session rules more valuable here than almost anywhere else. Set a
+          budget before you deposit, keep stakes flat, and end sessions on schedule rather
+          than on streaks.
+        </p>
+        <p class="mt-4 leading-relaxed text-mist-300">
+          The platform gives you the tools without asking: deposit caps, session limits,
+          cool-off periods and full self-exclusion, all available from your dashboard and
+          all effective immediately. None of them require a conversation with support. If
+          gaming ever stops feeling like a game, use them — early, not eventually.
+        </p>
+      </div>
+      <div class="flex flex-col gap-4">
+        <div class="glass rounded-3xl p-6">
+          <h3 class="font-display text-base font-bold">The four rules of safe play</h3>
+          <ul class="mt-4 space-y-3 text-sm leading-relaxed text-mist-300">
+            <li class="flex gap-3"><Icon name="check" class="mt-0.5 h-4 w-4 shrink-0 text-brand-400" /> Budget a fixed amount per session — money whose loss changes nothing.</li>
+            <li class="flex gap-3"><Icon name="check" class="mt-0.5 h-4 w-4 shrink-0 text-brand-400" /> Never chase losses; a raised stake to recover is a decision made by the last draw, not by you.</li>
+            <li class="flex gap-3"><Icon name="check" class="mt-0.5 h-4 w-4 shrink-0 text-brand-400" /> Take scheduled breaks — the countdown timer runs fine without you.</li>
+            <li class="flex gap-3"><Icon name="check" class="mt-0.5 h-4 w-4 shrink-0 text-brand-400" /> 18+ only, always. Gaming is for adults who have checked their local laws.</li>
+          </ul>
+        </div>
+        <div class="glass rounded-3xl p-6">
+          <h3 class="font-display text-base font-bold">Tools on your dashboard</h3>
+          <p class="mt-3 text-sm leading-relaxed text-mist-400">
+            Deposit limits · session reminders · cool-off periods · self-exclusion ·
+            itemised history export. All free, all instant, all reversible only after a
+            deliberate cooling-off window.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="section-pad">
+    <div class="container-site grid gap-10 lg:grid-cols-[0.9fr_1.4fr]">
+      <SectionHeading
+        eyebrow="Beginner FAQ"
+        title="Before your first draw"
+        sub="The questions new players ask most, answered without the fine print."
+      />
+      <FaqAccordion items={guideFaqs} />
+    </div>
+  </section>
+
+  <CtaBand
+    title="Six steps done? Time for a live draw."
+    sub="Watch the archive for five minutes, pick a steady market, and start with stakes that don't sting."
+  />
+</BaseLayout>

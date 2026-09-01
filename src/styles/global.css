@@ -1,0 +1,363 @@
+/* ==========================================================================
+   Yarrwin — Global Stylesheet
+   Tailwind CSS v4 (CSS-first config) · Design system: "Midnight Mint" (DESIGN.md)
+   ========================================================================== */
+
+@import "tailwindcss";
+
+/* --------------------------------------------------------------------------
+   Design Tokens — generate utilities like bg-ink-950, text-brand-400,
+   shadow-glow-brand, animate-marquee …
+   -------------------------------------------------------------------------- */
+@theme {
+  /* Ink — deep-space background scale */
+  --color-ink-950: #04070d;
+  --color-ink-900: #070c16;
+  --color-ink-850: #0a111e;
+  --color-ink-800: #0e1626;
+  --color-ink-700: #16223a;
+  --color-ink-600: #1f2f4d;
+
+  /* Brand — mint "win" accent */
+  --color-brand-200: #a9ffe0;
+  --color-brand-300: #6df5c4;
+  --color-brand-400: #2ee8a8;
+  --color-brand-500: #00d68f;
+  --color-brand-600: #00b377;
+  --color-brand-700: #068a61;
+
+  /* Gold — premium highlights */
+  --color-gold-300: #ffdf8f;
+  --color-gold-400: #f8c94b;
+  --color-gold-500: #dba32b;
+
+  /* Game result palette */
+  --color-win-green: #00d68f;
+  --color-win-red: #ff4d5e;
+  --color-win-violet: #8b5cf6;
+
+  /* Mist — text scale */
+  --color-mist-100: #eef2f9;
+  --color-mist-200: #d7deeb;
+  --color-mist-300: #b3c0d6;
+  --color-mist-400: #8797b3;
+  --color-mist-500: #64728f;
+  --color-mist-600: #47536e;
+
+  /* Typography */
+  --font-display: "Sora", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", monospace;
+
+  /* Elevation & glow */
+  --shadow-glow-brand:
+    0 0 0 1px rgb(0 214 143 / 0.28), 0 10px 40px -10px rgb(0 214 143 / 0.4);
+  --shadow-glow-gold:
+    0 0 0 1px rgb(248 201 75 / 0.28), 0 10px 40px -10px rgb(248 201 75 / 0.35);
+  --shadow-card:
+    inset 0 1px 0 0 rgb(255 255 255 / 0.05), 0 24px 48px -24px rgb(0 0 0 / 0.65);
+
+  /* Motion tokens (keyframes defined at root level below) */
+  --animate-marquee: marquee 58s linear infinite;
+  --animate-pulse-soft: pulse-soft 2.4s ease-in-out infinite;
+  --animate-rise: rise 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-pop: pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  --animate-count: count 0.5s ease-out both;
+  --animate-float: float 7s ease-in-out infinite;
+}
+
+/* Keyframes kept at root level so they are always emitted */
+@keyframes marquee {
+  from { transform: translate3d(0, 0, 0); }
+  to { transform: translate3d(-50%, 0, 0); }
+}
+@keyframes pulse-soft {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+@keyframes rise {
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes pop {
+  from { opacity: 0; transform: scale(0.8); }
+  to { opacity: 1; transform: scale(1); }
+}
+@keyframes count {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-12px); }
+}
+
+/* --------------------------------------------------------------------------
+   Base
+   -------------------------------------------------------------------------- */
+@layer base {
+  html {
+    color-scheme: dark;
+    scroll-behavior: smooth;
+    scrollbar-color: var(--color-ink-600) var(--color-ink-950);
+    /* Clip stray horizontal overflow (marquee tracks, blur orbs, wide tables)
+       without creating a scroll container — vertical scrolling stays native.
+       `hidden` first as a fallback for browsers without `clip` support. */
+    overflow-x: hidden;
+    overflow-x: clip;
+  }
+
+  body {
+    @apply bg-ink-950 font-sans text-mist-200 antialiased;
+    background-image:
+      radial-gradient(1200px 800px at 85% -10%, rgb(0 214 143 / 0.07), transparent 60%),
+      radial-gradient(1000px 700px at -10% 20%, rgb(139 92 246 / 0.05), transparent 55%);
+    font-feature-settings: "cv02", "cv03", "cv04";
+    overflow-x: hidden;
+    overflow-x: clip;
+  }
+
+  ::selection {
+    background: rgb(0 214 143 / 0.28);
+    color: var(--color-mist-100);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-brand-400);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  h1, h2, h3, h4 {
+    @apply font-display text-mist-100;
+    text-wrap: balance;
+  }
+
+  p { text-wrap: pretty; }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    ::before,
+    ::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Custom utilities
+   -------------------------------------------------------------------------- */
+@utility glass {
+  background: linear-gradient(
+    155deg,
+    rgb(255 255 255 / 0.055),
+    rgb(255 255 255 / 0.02) 45%,
+    rgb(255 255 255 / 0.035)
+  );
+  border: 1px solid rgb(255 255 255 / 0.09);
+  backdrop-filter: blur(18px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+}
+
+@utility glass-deep {
+  background: linear-gradient(160deg, rgb(14 22 38 / 0.86), rgb(7 12 22 / 0.78));
+  border: 1px solid rgb(255 255 255 / 0.08);
+  backdrop-filter: blur(22px) saturate(150%);
+  -webkit-backdrop-filter: blur(22px) saturate(150%);
+}
+
+@utility text-gradient-brand {
+  background-image: linear-gradient(
+    100deg,
+    var(--color-brand-300),
+    var(--color-brand-500) 55%,
+    var(--color-gold-300)
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+@utility num {
+  font-family: var(--font-mono);
+  font-feature-settings: "tnum" 1, "zero" 1;
+  letter-spacing: -0.01em;
+}
+
+@utility hairline {
+  border: 1px solid rgb(255 255 255 / 0.08);
+}
+
+@utility grid-bg {
+  background-image:
+    linear-gradient(rgb(255 255 255 / 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(255 255 255 / 0.04) 1px, transparent 1px);
+  background-size: 44px 44px;
+  mask-image: radial-gradient(ellipse 80% 62% at 50% 0%, black 30%, transparent 78%);
+  -webkit-mask-image: radial-gradient(ellipse 80% 62% at 50% 0%, black 30%, transparent 78%);
+}
+
+@utility no-scrollbar {
+  scrollbar-width: none;
+  &::-webkit-scrollbar { display: none; }
+}
+
+/* --------------------------------------------------------------------------
+   Components
+   -------------------------------------------------------------------------- */
+@layer components {
+  .container-site { @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8; }
+  .section-pad { @apply py-16 md:py-24; }
+
+  /* Skip link */
+  .skip-link {
+    @apply sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100]
+      focus:rounded-full focus:bg-brand-500 focus:px-4 focus:py-2 focus:font-semibold
+      focus:text-ink-950;
+  }
+
+  /* Buttons */
+  .btn {
+    @apply inline-flex select-none items-center justify-center gap-2 rounded-full px-6 py-3
+      text-sm font-semibold transition duration-200;
+  }
+  .btn-sm { @apply px-5 py-2 text-sm; }
+  .btn-primary {
+    @apply bg-brand-500 text-ink-950 shadow-glow-brand hover:bg-brand-400
+      hover:-translate-y-0.5 active:translate-y-0;
+  }
+  .btn-gold {
+    @apply bg-gold-400 text-ink-950 shadow-glow-gold hover:bg-gold-300
+      hover:-translate-y-0.5 active:translate-y-0;
+  }
+  .btn-ghost {
+    @apply hairline bg-white/5 text-mist-100 hover:bg-white/10 hover:-translate-y-0.5
+      active:translate-y-0;
+  }
+
+  /* Eyebrow label */
+  .eyebrow {
+    @apply inline-flex items-center gap-2 rounded-full border border-brand-500/25
+      bg-brand-500/10 px-3.5 py-1.5 text-xs font-semibold uppercase tracking-[0.18em]
+      text-brand-300;
+  }
+
+  /* Chips */
+  .chip {
+    @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold;
+  }
+  .chip-green { @apply border border-brand-500/30 bg-brand-500/10 text-brand-300; }
+  .chip-red { @apply border border-win-red/30 bg-win-red/10 text-[#ff8a94]; }
+  .chip-violet { @apply border border-win-violet/30 bg-win-violet/10 text-[#c4b0fd]; }
+  .chip-gold { @apply border border-gold-400/30 bg-gold-400/10 text-gold-300; }
+  .chip-neutral { @apply border border-white/10 bg-white/5 text-mist-300; }
+
+  /* Colour dots */
+  .dot { @apply inline-block h-2.5 w-2.5 rounded-full; }
+  .dot-green { background: var(--color-win-green); }
+  .dot-red { background: var(--color-win-red); }
+  .dot-violet { background: var(--color-win-violet); }
+
+  /* Result balls */
+  .ball {
+    @apply grid h-11 w-11 place-items-center rounded-full font-mono text-lg font-bold;
+  }
+  .ball-green { background: linear-gradient(135deg, #2ee8a8, #00b377); color: #04070d; }
+  .ball-red { background: linear-gradient(135deg, #ff6b78, #e13a4a); color: #fff; }
+  .ball-violet { background: linear-gradient(135deg, #a78bfa, #7c3aed); color: #fff; }
+  .ball-dual-red { background: linear-gradient(135deg, #e13a4a 50%, #7c3aed 50%); color: #fff; }
+  .ball-dual-green { background: linear-gradient(135deg, #00d68f 50%, #7c3aed 50%); color: #04070d; }
+  .ball-ink { @apply border border-white/10 bg-ink-800 text-mist-100; }
+
+  /* K3 dice & 5D digit tiles */
+  .die {
+    @apply grid h-9 w-9 place-items-center rounded-lg border border-white/10 bg-ink-800
+      font-mono text-sm font-bold text-mist-100;
+  }
+  .digit-tile {
+    @apply grid h-10 w-8 place-items-center rounded-md border border-white/10 bg-ink-800
+      font-mono text-sm font-bold text-mist-100;
+  }
+
+  /* Header */
+  #site-header .nav-shell {
+    border: 1px solid transparent;
+    transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+  }
+  #site-header.is-scrolled .nav-shell {
+    background: rgb(7 12 22 / 0.78);
+    border-color: rgb(255 255 255 / 0.08);
+    box-shadow: 0 12px 40px -20px rgb(0 0 0 / 0.7);
+    backdrop-filter: blur(18px) saturate(140%);
+    -webkit-backdrop-filter: blur(18px) saturate(140%);
+  }
+
+  .nav-link {
+    @apply rounded-full px-4 py-2 text-sm font-medium text-mist-300 transition
+      hover:bg-white/5 hover:text-mist-100;
+  }
+  .nav-link.is-active { @apply bg-white/10 text-brand-300; }
+
+  /* Tabs (results archive) */
+  .tab-btn {
+    @apply rounded-full px-5 py-2.5 text-sm font-semibold text-mist-400 transition
+      hover:text-mist-100;
+  }
+  .tab-btn[aria-selected="true"] {
+    @apply bg-brand-500 text-ink-950 shadow-glow-brand;
+  }
+
+  /* Marquee ticker — overflow-hidden is critical: the track is width:max-content
+     and must never inflate document.scrollWidth (kills touch scrolling). */
+  .marquee {
+    position: relative;
+    overflow: hidden;
+  }
+  .marquee-track {
+    display: flex;
+    width: max-content;
+    animation: marquee 58s linear infinite;
+  }
+  .marquee:hover .marquee-track { animation-play-state: paused; }
+  .marquee-copy { display: flex; align-items: center; gap: 0.75rem; padding-right: 0.75rem; }
+  .ticker-chip {
+    @apply inline-flex items-center gap-2 rounded-full border border-white/8 bg-white/[0.03]
+      px-3 py-1.5 text-xs whitespace-nowrap;
+  }
+
+  /* FAQ accordion */
+  .faq-item summary {
+    @apply flex cursor-pointer list-none items-center justify-between gap-4 p-5
+      font-display text-base font-semibold text-mist-100 md:p-6;
+  }
+  .faq-item summary::-webkit-details-marker { display: none; }
+  .faq-item .faq-chevron { transition: transform 0.25s ease; }
+  .faq-item[open] .faq-chevron { transform: rotate(180deg); }
+
+  /* Scrollbars in scroll areas */
+  .scroll-slim { scrollbar-width: thin; scrollbar-color: var(--color-ink-600) transparent; }
+  .scroll-slim::-webkit-scrollbar { height: 6px; width: 6px; }
+  .scroll-slim::-webkit-scrollbar-thumb { background: var(--color-ink-600); border-radius: 9999px; }
+
+  /* Editorial (SEO article) typography — left-aligned, generous rhythm */
+  .article-h2 {
+    @apply mt-14 font-display text-2xl font-extrabold tracking-tight text-mist-100 md:text-3xl;
+  }
+  .article-h3 {
+    @apply mt-9 font-display text-lg font-bold tracking-tight text-mist-100;
+  }
+  .article-p {
+    @apply mt-4 leading-relaxed text-mist-300;
+  }
+  .prose-link {
+    @apply font-medium text-brand-300 underline decoration-brand-500/40 underline-offset-4
+      transition hover:text-brand-200 hover:decoration-brand-300;
+  }
+  .article-ol {
+    @apply mt-4 list-decimal space-y-2.5 pl-5 leading-relaxed text-mist-300
+      marker:font-semibold marker:text-brand-400;
+  }
+}

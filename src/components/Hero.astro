@@ -1,0 +1,118 @@
+---
+import Icon from "./Icon.astro";
+---
+
+<section class="relative overflow-hidden">
+  <div class="grid-bg pointer-events-none absolute inset-0" aria-hidden="true"></div>
+  <div
+    class="pointer-events-none absolute -top-48 left-1/2 h-[520px] w-[820px] -translate-x-1/2 rounded-full bg-brand-500/10 blur-[130px]"
+    aria-hidden="true"
+  >
+  </div>
+  <div
+    class="pointer-events-none absolute -right-40 top-40 h-96 w-96 rounded-full bg-win-violet/10 blur-[110px]"
+    aria-hidden="true"
+  >
+  </div>
+
+  <div class="container-site relative grid items-center gap-14 pb-16 pt-10 md:pt-14 lg:grid-cols-[1.05fr_0.95fr] lg:pb-24">
+    <div class="animate-rise">
+      <p class="eyebrow">
+        <Icon name="bolt" class="h-3.5 w-3.5" />
+        Official gaming &amp; results platform
+      </p>
+      <h1 class="mt-6 font-display text-4xl font-extrabold leading-[1.06] tracking-tight sm:text-5xl xl:text-6xl">
+        Yarrwin — lightning-fast game &amp; lottery results, <span class="text-gradient-brand">zero guesswork.</span>
+      </h1>
+      <p class="mt-6 max-w-xl text-lg leading-relaxed text-mist-300">
+        Play WinGo colour prediction, K3 and 5D lotteries on a platform engineered for
+        trust: draws settle in under three seconds, mechanics are fully transparent, and
+        every result is published to a permanent public archive you can verify anytime.
+      </p>
+
+      <div class="mt-8 flex flex-wrap items-center gap-3">
+        <a href="/games/" class="btn btn-primary">
+          Play Now
+          <Icon name="arrow-right" class="h-4 w-4" />
+        </a>
+        <a href="/results/" class="btn btn-ghost">
+          <Icon name="chart" class="h-4 w-4" />
+          View Live Results
+        </a>
+        <a href="/guide/how-to-play/#step-1" class="btn btn-ghost">Register Free</a>
+      </div>
+
+      <ul class="mt-9 flex flex-wrap gap-x-6 gap-y-3 text-sm text-mist-400">
+        <li class="inline-flex items-center gap-2">
+          <Icon name="clock" class="h-4 w-4 text-brand-400" />
+          60-second draws
+        </li>
+        <li class="inline-flex items-center gap-2">
+          <Icon name="eye" class="h-4 w-4 text-brand-400" />
+          Provably fair mechanics
+        </li>
+        <li class="inline-flex items-center gap-2">
+          <Icon name="lock" class="h-4 w-4 text-brand-400" />
+          256-bit encrypted wallet
+        </li>
+      </ul>
+    </div>
+
+    <!-- Decorative draw card (aria-hidden — the real interactive board lives below) -->
+    <div class="relative mx-auto w-full max-w-md lg:max-w-none" aria-hidden="true">
+      <div class="glass-deep relative z-10 rounded-3xl p-6 shadow-card">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2.5">
+            <span class="grid h-9 w-9 place-items-center rounded-xl bg-brand-500/15 text-brand-300">
+              <Icon name="wingo" class="h-4.5 w-4.5" />
+            </span>
+            <span class="font-display text-sm font-bold text-mist-100">WinGo 1 Min</span>
+          </div>
+          <span class="chip chip-green">
+            <span class="dot dot-green animate-pulse-soft"></span>
+            LIVE
+          </span>
+        </div>
+
+        <div class="mt-6 flex items-center gap-5">
+          <span class="ball ball-dual-green h-20 w-20 text-4xl shadow-glow-brand">7</span>
+          <div>
+            <p class="num text-xs text-mist-400">#20260901·1247</p>
+            <div class="mt-2 flex flex-wrap gap-1.5">
+              <span class="chip chip-green"><span class="dot dot-green"></span>Green</span>
+              <span class="chip chip-gold">Big</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-6 grid grid-cols-5 gap-2">
+          <span class="ball ball-red h-9 w-9 text-sm">2</span>
+          <span class="ball ball-green h-9 w-9 text-sm">9</span>
+          <span class="ball ball-violet h-9 w-9 text-sm">5</span>
+          <span class="ball ball-red h-9 w-9 text-sm">0</span>
+          <span class="ball ball-green h-9 w-9 text-sm">3</span>
+        </div>
+
+        <div class="mt-6 flex items-center justify-between border-t border-white/5 pt-4 text-xs">
+          <span class="chip chip-neutral">
+            <Icon name="bolt" class="h-3 w-3 text-brand-400" />
+            Settled in 1.8s
+          </span>
+          <span class="inline-flex items-center gap-1.5 font-semibold text-brand-300">
+            Open archive
+            <Icon name="arrow-right" class="h-3.5 w-3.5" />
+          </span>
+        </div>
+      </div>
+
+      <div class="glass absolute -left-6 top-16 z-0 hidden animate-float rounded-2xl px-4 py-3 sm:block">
+        <p class="text-[10px] font-bold uppercase tracking-[0.14em] text-mist-500">K3 Lottery</p>
+        <p class="num mt-1 text-sm font-bold text-mist-100">4 · 5 · 6 <span class="text-mist-400">Sum 15</span></p>
+      </div>
+      <div class="glass absolute -right-4 bottom-14 z-0 hidden animate-float rounded-2xl px-4 py-3 sm:block" style="animation-delay: -3.5s">
+        <p class="text-[10px] font-bold uppercase tracking-[0.14em] text-mist-500">Aviator</p>
+        <p class="num mt-1 text-sm font-bold text-gold-300">2.37× cashed out</p>
+      </div>
+    </div>
+  </div>
+</section>

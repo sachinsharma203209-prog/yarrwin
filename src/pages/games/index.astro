@@ -1,0 +1,442 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import SectionHeading from "../../components/SectionHeading.astro";
+import Icon from "../../components/Icon.astro";
+
+const breadcrumb = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: [
+    { "@type": "ListItem", position: 1, name: "Home", item: "https://yarrwin.com/" },
+    { "@type": "ListItem", position: 2, name: "Games", item: "https://yarrwin.com/games/" },
+  ],
+};
+
+const gamesSchema = {
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  name: "Yarrwin games",
+  itemListElement: [
+    { "@type": "ListItem", position: 1, name: "WinGo — Colour Prediction", item: "https://yarrwin.com/games/#wingo" },
+    { "@type": "ListItem", position: 2, name: "K3 Lottery", item: "https://yarrwin.com/games/#k3" },
+    { "@type": "ListItem", position: 3, name: "5D Lottery", item: "https://yarrwin.com/games/#5d" },
+    { "@type": "ListItem", position: 4, name: "Aviator & Slots", item: "https://yarrwin.com/games/#aviator" },
+  ],
+};
+
+const payoutHeaders = ["Bet type", "Coverage", "Illustrative payout"];
+
+const wingoPayouts = [
+  ["Green", "Winning digits 1, 3, 7, 9", "2× stake"],
+  ["Red", "Winning digits 2, 4, 6, 8", "2× stake"],
+  ["Violet", "Winning digits 0 and 5 only", "4.5× stake"],
+  ["Exact number", "One digit from 0–9", "9× stake"],
+  ["Big / Small", "Big 5–9 · Small 0–4", "2× stake"],
+];
+
+const k3Payouts = [
+  ["Big / Small", "Sum 11–18 is Big · sum 3–10 is Small", "2× stake"],
+  ["Odd / Even", "Sum parity of the three dice", "2× stake"],
+  ["Exact sum", "Any chosen total from 3–18", "6× – 50× by probability"],
+  ["Any two matching", "At least two dice show the same face", "3× stake"],
+  ["Triple", "All three dice show the same face", "30× stake"],
+];
+
+const fiveDPayouts = [
+  ["Sum Big / Small", "Sum 23–45 is Big · sum 0–22 is Small", "2× stake"],
+  ["Sum Odd / Even", "Parity of the five-digit total", "2× stake"],
+  ["Single digit", "One exact digit on one position", "9× stake"],
+  ["Position Big / Small", "Per-digit A–E size call", "2× stake"],
+  ["Combination", "Two or more matched positions", "Varies by coverage"],
+];
+
+const tips = {
+  wingo: [
+    "Colour and size markets pay 1:1 but hit far more often than single digits — build steady sessions around them and treat exact numbers as long shots.",
+    "Track the colour streaks in the archive before you play; a long one-sided run tells you nothing about the next draw, but it does tell you how you would feel riding it.",
+    "Decide your exit before the countdown starts: a fixed number of periods per session keeps a fast game from becoming a fast churn.",
+  ],
+  k3: [
+    "Middle sums (10 and 11) are the most probable totals on three dice — payout tables price this in, so compare odds before chasing extremes.",
+    "Big/Small and Odd/Even are the steadier markets; triples pay 30× precisely because they almost never arrive.",
+    "The dice history is public and permanent — use it to learn the distribution, never to chase 'due' outcomes. Dice have no memory.",
+  ],
+  "5d": [
+    "Sum markets behave like a bell curve: totals near 22–23 dominate, so read the payout column carefully before assuming symmetry.",
+    "Per-digit Big/Small gives you five independent 1:1-style markets per draw — the gentlest way to learn how 5D flows.",
+    "Spread small stakes across positions instead of stacking one position; variance across five digits is smoother than variance on one.",
+  ],
+  aviator: [
+    "Set an auto cash-out before the round starts and treat it as a contract with yourself — the curve's whole appeal is that it can always go one tick higher.",
+    "Two-cash-out play (secure half at low multiplier, let the rest ride) balances frequent small returns with occasional bigger rounds.",
+    "Aviator rounds are independent and provably fair: a 10× flight last round changes nothing about this round. Chasing is the most expensive strategy on the platform.",
+  ],
+} as const;
+
+const anchorPills = [
+  { href: "#wingo", label: "WinGo" },
+  { href: "#k3", label: "K3" },
+  { href: "#5d", label: "5D" },
+  { href: "#aviator", label: "Aviator & Slots" },
+];
+---
+
+<BaseLayout
+  title="Yarrwin Games Hub — WinGo, K3 Lottery, 5D & Aviator Rules"
+  description="Complete rules, odds and strategy guides for every Yarrwin game: WinGo colour prediction, the K3 dice lottery, 5D lottery and provably fair Aviator rounds."
+  ogImage="/og/games.png"
+  keywords="Yarrwin official game, Wingo game rules, K3 lottery guide, 5D lottery how to play, colour prediction strategy"
+  schema={[breadcrumb, gamesSchema]}
+>
+  <!-- Page head -->
+  <section class="container-site pt-10 md:pt-14">
+    <div class="max-w-3xl">
+      <nav aria-label="Breadcrumb" class="mb-6 text-sm text-mist-400">
+        <ol class="flex items-center gap-2">
+          <li><a href="/" class="transition hover:text-brand-300">Home</a></li>
+          <li aria-hidden="true">/</li>
+          <li aria-current="page" class="text-mist-200">Games</li>
+        </ol>
+      </nav>
+      <h1 class="font-display text-4xl font-extrabold leading-[1.08] tracking-tight md:text-5xl">
+        Yarrwin Games Hub — rules, odds & <span class="text-gradient-brand">strategy</span>
+      </h1>
+      <p class="mt-6 text-lg leading-relaxed text-mist-300">
+        Every Yarrwin game is documented here in full: how each draw works, which markets
+        you can bet, illustrative payouts and practical tips for playing responsibly. Read
+        a guide in three minutes, then watch a live draw close on the results page before
+        you stake anything.
+      </p>
+      <div class="mt-8 flex flex-wrap gap-2">
+        {
+          anchorPills.map((p) => (
+            <a href={p.href} class="btn btn-ghost btn-sm">
+              {p.label}
+            </a>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- WinGo -->
+  <section id="wingo" class="section-pad scroll-mt-28">
+    <div class="container-site grid gap-10 lg:grid-cols-[1.15fr_1fr]">
+      <div>
+        <p class="eyebrow"><Icon name="wingo" class="h-3.5 w-3.5" /> Colour prediction</p>
+        <h2 class="mt-4 font-display text-3xl font-extrabold tracking-tight">WinGo — 60-second colour prediction</h2>
+        <p class="mt-5 leading-relaxed text-mist-300">
+          WinGo is the fastest game on Yarrwin. Each 60-second period generates a single
+          digit from 0 to 9, and that digit settles every market at once: its colour, its
+          number, and its size. Digits 1, 3, 7 and 9 settle Green; 2, 4, 6 and 8 settle
+          Red; the two special digits 0 and 5 settle Violet as well as their base colour,
+          which is exactly where the 4.5× payouts live.
+        </p>
+        <p class="mt-4 leading-relaxed text-mist-300">
+          Because a period closes every minute, WinGo rewards rhythm over impulse. Decide
+          your market before the countdown, confirm your stake once, and let the draw —
+          not your emotions — do the rest. The archive stores every period permanently, so
+          you can audit the flow of colours, numbers and sizes across any stretch of time.
+        </p>
+
+        <h3 class="mt-8 font-display text-lg font-bold">How a round works</h3>
+        <ol class="mt-3 space-y-2.5 text-sm leading-relaxed text-mist-400">
+          <li class="flex gap-3"><span class="num font-bold text-brand-300">01</span> A period opens with a 60-second betting window and a live countdown.</li>
+          <li class="flex gap-3"><span class="num font-bold text-brand-300">02</span> You pick a market — colour, exact number, or Big/Small — and confirm your stake.</li>
+          <li class="flex gap-3"><span class="num font-bold text-brand-300">03</span> The window locks and the result digit is generated via commit-reveal.</li>
+          <li class="flex gap-3"><span class="num font-bold text-brand-300">04</span> Markets settle in under three seconds; the period is published to the archive.</li>
+        </ol>
+      </div>
+
+      <div class="flex flex-col gap-5">
+        <div class="glass scroll-slim relative overflow-hidden rounded-3xl">
+          <div class="overflow-x-auto">
+            <table class="w-full min-w-[420px] text-left text-sm">
+              <caption class="sr-only">WinGo bet types and illustrative payouts</caption>
+              <thead>
+                <tr class="border-b border-white/8 bg-white/[0.03]">
+                  {payoutHeaders.map((h) => (
+                    <th scope="col" class="px-5 py-3.5 text-xs font-semibold uppercase tracking-[0.14em] text-mist-400">{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-white/5">
+                {
+                  wingoPayouts.map((row) => (
+                    <tr>
+                      <td class="px-5 py-3 font-semibold text-mist-100">{row[0]}</td>
+                      <td class="px-5 py-3 text-mist-400">{row[1]}</td>
+                      <td class="px-5 py-3 text-right whitespace-nowrap"><span class="chip chip-gold">{row[2]}</span></td>
+                    </tr>
+                  ))
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <p class="text-xs leading-relaxed text-mist-500">
+          Payouts shown are illustrative for this demo build. Exact odds are displayed in-app before each bet confirmation.
+        </p>
+      </div>
+    </div>
+
+    <div class="container-site mt-10 grid gap-4 md:grid-cols-3">
+      {
+        tips.wingo.map((t) => (
+          <article class="glass rounded-3xl p-6">
+            <h3 class="flex items-center gap-2 font-display text-sm font-bold text-brand-300">
+              <Icon name="sparkles" class="h-4 w-4" /> Strategy tip
+            </h3>
+            <p class="mt-3 text-sm leading-relaxed text-mist-400">{t}</p>
+          </article>
+        ))
+      }
+    </div>
+
+    <div class="container-site mt-8 flex flex-wrap gap-3">
+      <a href="/results/#wingo" class="btn btn-primary btn-sm">View WinGo results</a>
+      <a href="/guide/how-to-play/" class="btn btn-ghost btn-sm">Beginner guide</a>
+    </div>
+  </section>
+
+  <!-- K3 -->
+  <section id="k3" class="section-pad scroll-mt-28 bg-ink-850/40">
+    <div class="container-site grid gap-10 lg:grid-cols-[1.15fr_1fr]">
+      <div>
+        <p class="eyebrow"><Icon name="k3" class="h-3.5 w-3.5" /> Dice lottery</p>
+        <h2 class="mt-4 font-display text-3xl font-extrabold tracking-tight">K3 — the three-dice lottery</h2>
+        <p class="mt-5 leading-relaxed text-mist-300">
+          K3 rolls three dice every three minutes and pays across a ladder of markets:
+          call the exact sum from 3 to 18, take the steadier Big/Small and Odd/Even lines,
+          or chase the premiums — any-two-matching at 3× and a full triple at 30×. With 16
+          possible sums and 216 dice combinations underneath them, K3 sits in the sweet
+          spot between instant games and classic lottery draws.
+        </p>
+        <p class="mt-4 leading-relaxed text-mist-300">
+          Each die is drawn from the same provably fair entropy pool as the rest of the
+          platform, and the reveal includes all three faces plus the derived sum, so you
+          can verify a period from its archive row alone. Draws land every three minutes —
+          long enough to think, short enough to stay sharp.
+        </p>
+
+        <h3 class="mt-8 font-display text-lg font-bold">How a round works</h3>
+        <ol class="mt-3 space-y-2.5 text-sm leading-relaxed text-mist-400">
+          <li class="flex gap-3"><span class="num font-bold text-brand-300">01</span> A three-minute betting window opens across all K3 markets.</li>
+          <li class="flex gap-3"><span class="num font-bold text-brand-300">02</span> Choose your market and stake — sums, size, parity, matches or triple.</li>
+          <li class="flex gap-3"><span class="num font-bold text-brand-300">03</span> Three dice are drawn and revealed with their commitment hash.</li>
+          <li class="flex gap-3"><span class="num font-bold text-brand-300">04</span> Every market settles instantly and the period joins the archive.</li>
+        </ol>
+      </div>
+
+      <div class="flex flex-col gap-5">
+        <div class="glass scroll-slim relative overflow-hidden rounded-3xl">
+          <div class="overflow-x-auto">
+            <table class="w-full min-w-[420px] text-left text-sm">
+              <caption class="sr-only">K3 bet types and illustrative payouts</caption>
+              <thead>
+                <tr class="border-b border-white/8 bg-white/[0.03]">
+                  {payoutHeaders.map((h) => (
+                    <th scope="col" class="px-5 py-3.5 text-xs font-semibold uppercase tracking-[0.14em] text-mist-400">{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-white/5">
+                {
+                  k3Payouts.map((row) => (
+                    <tr>
+                      <td class="px-5 py-3 font-semibold text-mist-100">{row[0]}</td>
+                      <td class="px-5 py-3 text-mist-400">{row[1]}</td>
+                      <td class="px-5 py-3 text-right whitespace-nowrap"><span class="chip chip-gold">{row[2]}</span></td>
+                    </tr>
+                  ))
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <p class="text-xs leading-relaxed text-mist-500">
+          Payouts shown are illustrative for this demo build. Exact odds are displayed in-app before each bet confirmation.
+        </p>
+      </div>
+    </div>
+
+    <div class="container-site mt-10 grid gap-4 md:grid-cols-3">
+      {
+        tips.k3.map((t) => (
+          <article class="glass rounded-3xl p-6">
+            <h3 class="flex items-center gap-2 font-display text-sm font-bold text-gold-300">
+              <Icon name="sparkles" class="h-4 w-4" /> Strategy tip
+            </h3>
+            <p class="mt-3 text-sm leading-relaxed text-mist-400">{t}</p>
+          </article>
+        ))
+      }
+    </div>
+
+    <div class="container-site mt-8 flex flex-wrap gap-3">
+      <a href="/results/#k3" class="btn btn-primary btn-sm">View K3 results</a>
+      <a href="/guide/how-to-play/" class="btn btn-ghost btn-sm">Beginner guide</a>
+    </div>
+  </section>
+
+  <!-- 5D -->
+  <section id="5d" class="section-pad scroll-mt-28">
+    <div class="container-site grid gap-10 lg:grid-cols-[1.15fr_1fr]">
+      <div>
+        <p class="eyebrow"><Icon name="5d" class="h-3.5 w-3.5" /> Five-digit lottery</p>
+        <h2 class="mt-4 font-display text-3xl font-extrabold tracking-tight">5D — five digits, ten markets</h2>
+        <p class="mt-5 leading-relaxed text-mist-300">
+          5D draws a five-digit code — positions A, B, C, D and E, each 0–9 — every five
+          minutes. That single reveal powers a deep market grid: bet any single digit on
+          any position, call Big or Small per digit, or take the aggregate markets on the
+          five-digit sum, where totals near the middle of the 0–45 range dominate the
+          probability curve and pay accordingly.
+        </p>
+        <p class="mt-4 leading-relaxed text-mist-300">
+          The result matrix format makes 5D the most visual game on the platform — each
+          archive row shows all five digits plus the sum, so patterns across positions are
+          easy to study. It is the recommended second stop for beginners after WinGo:
+          slower cadence, richer structure, same verification standard.
+        </p>
+
+        <h3 class="mt-8 font-display text-lg font-bold">How a round works</h3>
+        <ol class="mt-3 space-y-2.5 text-sm leading-relaxed text-mist-400">
+          <li class="flex gap-3"><span class="num font-bold text-brand-300">01</span> A five-minute window opens on all 5D markets.</li>
+          <li class="flex gap-3"><span class="num font-bold text-brand-300">02</span> Pick digit markets, position size calls, or the sum market.</li>
+          <li class="flex gap-3"><span class="num font-bold text-brand-300">03</span> The five digits are drawn and revealed as the full A–E matrix.</li>
+          <li class="flex gap-3"><span class="num font-bold text-brand-300">04</span> Markets settle, and the period is archived with every digit.</li>
+        </ol>
+      </div>
+
+      <div class="flex flex-col gap-5">
+        <div class="glass scroll-slim relative overflow-hidden rounded-3xl">
+          <div class="overflow-x-auto">
+            <table class="w-full min-w-[420px] text-left text-sm">
+              <caption class="sr-only">5D bet types and illustrative payouts</caption>
+              <thead>
+                <tr class="border-b border-white/8 bg-white/[0.03]">
+                  {payoutHeaders.map((h) => (
+                    <th scope="col" class="px-5 py-3.5 text-xs font-semibold uppercase tracking-[0.14em] text-mist-400">{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-white/5">
+                {
+                  fiveDPayouts.map((row) => (
+                    <tr>
+                      <td class="px-5 py-3 font-semibold text-mist-100">{row[0]}</td>
+                      <td class="px-5 py-3 text-mist-400">{row[1]}</td>
+                      <td class="px-5 py-3 text-right whitespace-nowrap"><span class="chip chip-gold">{row[2]}</span></td>
+                    </tr>
+                  ))
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <p class="text-xs leading-relaxed text-mist-500">
+          Payouts shown are illustrative for this demo build. Exact odds are displayed in-app before each bet confirmation.
+        </p>
+      </div>
+    </div>
+
+    <div class="container-site mt-10 grid gap-4 md:grid-cols-3">
+      {
+        tips["5d"].map((t) => (
+          <article class="glass rounded-3xl p-6">
+            <h3 class="flex items-center gap-2 font-display text-sm font-bold text-[#c4b0fd]">
+              <Icon name="sparkles" class="h-4 w-4" /> Strategy tip
+            </h3>
+            <p class="mt-3 text-sm leading-relaxed text-mist-400">{t}</p>
+          </article>
+        ))
+      }
+    </div>
+
+    <div class="container-site mt-8 flex flex-wrap gap-3">
+      <a href="/results/#5d" class="btn btn-primary btn-sm">View 5D results</a>
+      <a href="/guide/how-to-play/" class="btn btn-ghost btn-sm">Beginner guide</a>
+    </div>
+  </section>
+
+  <!-- Aviator & Slots -->
+  <section id="aviator" class="section-pad scroll-mt-28 bg-ink-850/40">
+    <div class="container-site grid gap-10 lg:grid-cols-2">
+      <div>
+        <p class="eyebrow"><Icon name="aviator" class="h-3.5 w-3.5" /> Crash & reels</p>
+        <h2 class="mt-4 font-display text-3xl font-extrabold tracking-tight">Aviator &amp; Slots</h2>
+        <p class="mt-5 leading-relaxed text-mist-300">
+          Aviator is the platform's crash game: a round opens at 1.00× and the multiplier
+          climbs until it crashes at a provably fair point. Cash out before the crash and
+          your stake pays the multiplier at the moment you exit; hesitate and the round
+          resets. Auto cash-out lets you pre-commit an exit — the discipline tool most
+          experienced players never skip.
+        </p>
+        <p class="mt-4 leading-relaxed text-mist-300">
+          The slots lobby complements Aviator with a curated set of certified-RNG titles,
+          each publishing its return-to-player figure and volatility tier up front. There
+          are no hidden paytables: every game's maths is disclosed before your first spin,
+          and round history is itemised in your wallet ledger.
+        </p>
+        <div class="mt-6 grid gap-3 sm:grid-cols-2">
+          <div class="glass rounded-2xl p-4">
+            <h3 class="text-sm font-bold text-mist-100">Provably fair rounds</h3>
+            <p class="mt-1.5 text-xs leading-relaxed text-mist-400">Each crash point is derived from a pre-committed hash you can verify after the round.</p>
+          </div>
+          <div class="glass rounded-2xl p-4">
+            <h3 class="text-sm font-bold text-mist-100">Auto cash-out</h3>
+            <p class="mt-1.5 text-xs leading-relaxed text-mist-400">Set your exit multiplier before liftoff — the contract executes without hesitation.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex flex-col gap-5">
+        <div class="container-site !px-0">
+          <div class="glass rounded-3xl p-6">
+            <h3 class="flex items-center gap-2 font-display text-sm font-bold text-[#ff8a94]">
+              <Icon name="alert" class="h-4 w-4" /> Play Aviator with a plan
+            </h3>
+            <p class="mt-3 text-sm leading-relaxed text-mist-400">
+              The multiplier curve is engineered to be seductive — there is always one more
+              tick. Set your cash-out before the round, keep stakes flat, and cap your
+              rounds per session. If you find yourself raising stakes to recover a loss,
+              that is the signal to stop: use session limits or self-exclusion, both
+              available from your dashboard.
+            </p>
+          </div>
+        </div>
+        <div class="container-site !px-0">
+          <div class="glass rounded-3xl p-6">
+            <h3 class="flex items-center gap-2 font-display text-sm font-bold text-brand-300">
+              <Icon name="refresh" class="h-4 w-4" /> Reading the round history
+            </h3>
+            <p class="mt-3 text-sm leading-relaxed text-mist-400">
+              Aviator history is a distribution, not a pattern: red flights under 2×
+              cluster heavily, gold flights above 2× are the exception that funds the
+              excitement. Study the archive to calibrate expectations — never to predict
+              the next round. Independent rounds are the whole point of fairness.
+            </p>
+          </div>
+        </div>
+        <div class="flex flex-wrap gap-3">
+          <a href="/results/" class="btn btn-primary btn-sm">View round history</a>
+          <a href="/guide/how-to-play/#play-safe" class="btn btn-ghost btn-sm">Play safe guide</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Bottom CTA -->
+  <section class="container-site pb-20 md:pb-28">
+    <SectionHeading
+      eyebrow="Choose your game"
+      title="Read the rules. Watch a draw. Then play."
+      sub="The fastest path to comfortable play is one guide and one live archive session — both are free, no account required."
+      align="center"
+    />
+    <div class="mt-8 flex flex-wrap items-center justify-center gap-3">
+      <a href="/results/" class="btn btn-primary">Watch live results</a>
+      <a href="/guide/how-to-play/" class="btn btn-ghost">Open the beginner guide</a>
+    </div>
+  </section>
+</BaseLayout>

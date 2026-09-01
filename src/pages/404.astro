@@ -1,0 +1,32 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Icon from "../components/Icon.astro";
+---
+
+<BaseLayout
+  title="Page Not Found — Yarrwin"
+  description="This page sailed off the map. Head back to the Yarrwin homepage, games hub or live results archive."
+  noindex={true}
+>
+  <section class="container-site grid min-h-[70vh] place-items-center pt-10 pb-20">
+    <div class="glass-deep relative w-full max-w-xl overflow-hidden rounded-3xl p-8 text-center shadow-card md:p-12">
+      <div class="pointer-events-none absolute -top-20 left-1/2 h-48 w-96 -translate-x-1/2 rounded-full bg-brand-500/15 blur-[80px]" aria-hidden="true"></div>
+      <p class="num text-gradient-brand relative text-6xl font-extrabold md:text-7xl">404</p>
+      <h1 class="relative mt-4 font-display text-2xl font-extrabold tracking-tight md:text-3xl">
+        This page sailed off the map
+      </h1>
+      <p class="relative mx-auto mt-4 max-w-sm leading-relaxed text-mist-400">
+        The draw you're looking for isn't here. The live results archive, games hub and
+        beginner guide are all a click away.
+      </p>
+      <div class="relative mt-8 flex flex-wrap items-center justify-center gap-3">
+        <a href="/" class="btn btn-primary">
+          Back home
+          <Icon name="arrow-right" class="h-4 w-4" />
+        </a>
+        <a href="/results/" class="btn btn-ghost">View results</a>
+        <a href="/games/" class="btn btn-ghost">Games hub</a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

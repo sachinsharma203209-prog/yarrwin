@@ -1,0 +1,246 @@
+---
+/**
+ * LiveBoard — the flagship interactive island.
+ *
+ * Three game panels are server-rendered with deterministic draws (SEO-crawlable),
+ * then a tiny vanilla script takes over client-side: real-time countdowns, new
+ * simulated draws at each period boundary, and animated recent-result chips.
+ * No framework hydration — plain DOM updates, ~2 KB of JS.
+ */
+import { GAME_META, history } from "../lib/simulator";
+import Icon from "./Icon.astro";
+
+const GAMES = ["wingo", "k3", "5d"] as const;
+type PanelGame = (typeof GAMES)[number];
+
+const iconFor: Record<PanelGame, "wingo" | "k3" | "5d"> = { wingo: "wingo", k3: "k3", "5d": "5d" };
+
+const boards = GAMES.map((id) => ({ id, meta: GAME_META[id], draws: history(id, 6) }));
+
+const recentClasses =
+  "flex items-center gap-1.5 rounded-lg border border-white/8 bg-white/[0.04] px-2.5 py-1 text-xs";
+---
+
+<section class="container-site" aria-label="Live results board — simulated demonstration feed">
+  <div class="grid gap-4 md:grid-cols-3">
+    {
+      boards.map(({ id, meta, draws }) => {
+        const latest = draws[0];
+        return (
+          <article class="glass-deep rounded-3xl p-5 shadow-card" data-live-panel data-game={id} data-period={latest.period}>
+            <header class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <Icon name={iconFor[id]} class="h-4 w-4 text-brand-400" />
+                <h3 class="font-display text-sm font-bold tracking-tight text-mist-100">{meta.name}</h3>
+              </div>
+              <span class="chip chip-green">
+                <span class="dot dot-green animate-pulse-soft" />
+                LIVE
+              </span>
+            </header>
+
+            <div class="mt-5 flex min-h-[64px] items-center gap-4" data-latest aria-live="polite">
+              {id === "wingo" && latest.game === "wingo" && (
+                <>
+                  <span class={`ball h-14 w-14 text-2xl ${latest.colors.length === 2 ? (latest.colors[0] === "red" ? "ball-dual-red" : "ball-dual-green") : `ball-${latest.colors[0]}`}`}>
+                    {latest.number}
+                  </span>
+                  <div class="min-w-0">
+                    <p class="num truncate text-xs text-mist-400" data-period-label>{latest.period}</p>
+                    <div class="mt-1.5 flex flex-wrap gap-1.5">
+                      {latest.colors.map((c) => (
+                        <span class={`chip chip-${c}`}>
+                          <span class={`dot dot-${c}`} />
+                          {c[0].toUpperCase() + c.slice(1)}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                  <span class={`chip ml-auto ${latest.size === "Big" ? "chip-gold" : "chip-neutral"}`}>{latest.size}</span>
+                </>
+              )}
+
+              {id === "k3" && latest.game === "k3" && (
+                <>
+                  <div class="flex gap-1.5" data-dice>
+                    {latest.dice.map((v) => (
+                      <span class="die">{v}</span>
+                    ))}
+                  </div>
+                  <div class="min-w-0">
+                    <p class="num truncate text-xs text-mist-400" data-period-label>{latest.period}</p>
+                    <p class="mt-1.5 text-sm text-mist-300">
+                      Sum <span class="num font-bold text-mist-100">{latest.sum}</span>
+                      <span class="text-mist-500"> · {latest.size} · {latest.parity}</span>
+                    </p>
+                  </div>
+                </>
+              )}
+
+              {id === "5d" && latest.game === "5d" && (
+                <>
+                  <div class="flex gap-1" data-digits>
+                    {latest.digits.map((v) => (
+                      <span class="digit-tile">{v}</span>
+                    ))}
+                  </div>
+                  <div class="min-w-0">
+                    <p class="num truncate text-xs text-mist-400" data-period-label>{latest.period}</p>
+                    <p class="mt-1.5 text-sm text-mist-300">
+                      Sum <span class="num font-bold text-mist-100">{latest.sum}</span>
+                      <span class="text-mist-500"> · {latest.size}</span>
+                    </p>
+                  </div>
+                </>
+              )}
+            </div>
+
+            <div class="mt-5 flex items-center justify-between border-t border-white/5 pt-3.5">
+              <span class="inline-flex items-center gap-1.5 text-xs text-mist-400">
+                <Icon name="clock" class="h-3.5 w-3.5" />
+                Next draw
+              </span>
+              <span class="num text-base font-bold text-gold-300" data-countdown>--:--</span>
+            </div>
+
+            <ul class="mt-3 flex flex-wrap gap-1.5" data-recent>
+              {
+                draws.slice(1, 6).map((d) => (
+                  <li class={recentClasses}>
+                    {d.game === "wingo" && (
+                      <>
+                        <span class="num font-bold text-mist-200">{d.number}</span>
+                        <span class={`dot dot-${d.colors[0]}`} />
+                        <span class="num text-mist-500">{d.period.slice(-4)}</span>
+                      </>
+                    )}
+                    {d.game === "k3" && (
+                      <>
+                        <span class="num font-bold text-mist-200">{d.dice.join("·")}</span>
+                        <span class="num text-mist-500">S{d.sum}</span>
+                      </>
+                    )}
+                    {d.game === "5d" && (
+                      <>
+                        <span class="num font-bold text-mist-200">{d.digits.join("")}</span>
+                        <span class="num text-mist-500">S{d.sum}</span>
+                      </>
+                    )}
+                  </li>
+                ))
+              }
+            </ul>
+          </article>
+        );
+      })
+    }
+  </div>
+</section>
+
+<script>
+  import {
+    drawFor,
+    fmtCountdown,
+    nextDrawAt,
+    periodFor,
+    type Draw,
+    type TimedGameId,
+  } from "../lib/simulator";
+
+  const panelOf = (game: string) =>
+    document.querySelector<HTMLElement>(`[data-live-panel][data-game="${game}"]`);
+
+  const GAMES: TimedGameId[] = ["wingo", "k3", "5d"];
+
+  const chipClass = (c: string) => `chip chip-${c}`;
+  const ballClass = (colors: string[]) =>
+    colors.length === 2
+      ? colors[0] === "red"
+        ? "ball ball-dual-red"
+        : "ball ball-dual-green"
+      : `ball ball-${colors[0]}`;
+
+  const cap = (c: string) => c[0].toUpperCase() + c.slice(1);
+
+  function latestHTML(game: TimedGameId, d: Draw): string {
+    if (game === "wingo" && d.game === "wingo") {
+      const chips = d.colors
+        .map((c) => `<span class="${chipClass(c)}"><span class="dot dot-${c}"></span>${cap(c)}</span>`)
+        .join("");
+      return `
+        <span class="${ballClass(d.colors)} h-14 w-14 animate-pop text-2xl">${d.number}</span>
+        <div class="min-w-0">
+          <p class="num truncate text-xs text-mist-400" data-period-label>${d.period}</p>
+          <div class="mt-1.5 flex flex-wrap gap-1.5">${chips}</div>
+        </div>
+        <span class="chip ml-auto ${d.size === "Big" ? "chip-gold" : "chip-neutral"}">${d.size}</span>`;
+    }
+    if (game === "k3" && d.game === "k3") {
+      const dice = d.dice.map((v) => `<span class="die">${v}</span>`).join("");
+      return `
+        <div class="flex gap-1.5">${dice}</div>
+        <div class="min-w-0">
+          <p class="num truncate text-xs text-mist-400" data-period-label>${d.period}</p>
+          <p class="mt-1.5 text-sm text-mist-300">Sum <span class="num font-bold text-mist-100">${d.sum}</span><span class="text-mist-500"> · ${d.size} · ${d.parity}</span></p>
+        </div>`;
+    }
+    if (game === "5d" && d.game === "5d") {
+      const digits = d.digits.map((v) => `<span class="digit-tile">${v}</span>`).join("");
+      return `
+        <div class="flex gap-1">${digits}</div>
+        <div class="min-w-0">
+          <p class="num truncate text-xs text-mist-400" data-period-label>${d.period}</p>
+          <p class="mt-1.5 text-sm text-mist-300">Sum <span class="num font-bold text-mist-100">${d.sum}</span><span class="text-mist-500"> · ${d.size}</span></p>
+        </div>`;
+    }
+    return "";
+  }
+
+  function recentHTML(d: Draw): string {
+    if (d.game === "wingo") {
+      return `<span class="num font-bold text-mist-200">${d.number}</span><span class="dot dot-${d.colors[0]}"></span><span class="num text-mist-500">${d.period.slice(-4)}</span>`;
+    }
+    if (d.game === "k3") {
+      return `<span class="num font-bold text-mist-200">${d.dice.join("·")}</span><span class="num text-mist-500">S${d.sum}</span>`;
+    }
+    if (d.game === "5d") {
+      return `<span class="num font-bold text-mist-200">${d.digits.join("")}</span><span class="num text-mist-500">S${d.sum}</span>`;
+    }
+    return "";
+  }
+
+  const RECENT_CLASSES =
+    "flex items-center gap-1.5 rounded-lg border border-white/8 bg-white/[0.04] px-2.5 py-1 text-xs animate-pop";
+
+  function tick() {
+    const now = new Date();
+    for (const game of GAMES) {
+      const el = panelOf(game);
+      if (!el) continue;
+
+      const cd = el.querySelector("[data-countdown]");
+      if (cd) cd.textContent = fmtCountdown(nextDrawAt(game, now) - now.getTime());
+
+      const period = periodFor(game, now);
+      if (period !== el.dataset.period) {
+        el.dataset.period = period;
+        const draw = drawFor(game, period, now);
+
+        const slot = el.querySelector("[data-latest]");
+        if (slot) slot.innerHTML = latestHTML(game, draw);
+
+        const ul = el.querySelector("[data-recent]");
+        if (ul) {
+          const li = document.createElement("li");
+          li.className = RECENT_CLASSES;
+          li.innerHTML = recentHTML(draw);
+          ul.prepend(li);
+          while (ul.children.length > 5) ul.lastElementChild?.remove();
+        }
+      }
+    }
+  }
+
+  tick();
+  window.setInterval(tick, 250);
+</script>
