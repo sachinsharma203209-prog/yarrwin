@@ -1,0 +1,268 @@
+---
+export const prerender = false;
+
+import { getEnv } from "../../../lib/runtime";
+import { verifySessionToken, parseCookies } from "../../../lib/auth";
+import AdminLayout from "../../../components/AdminLayout.astro";
+
+const env = getEnv(Astro);
+const cookies = parseCookies(Astro.request.headers.get("cookie"));
+const authed = await verifySessionToken(env.DB, cookies["yarrwin_session"]);
+if (!authed) return Astro.redirect("/admin/login", 302);
+---
+
+<AdminLayout title="Categories" active="categories">
+  <div class="page-header">
+    <h2 class="page-title">Categories</h2>
+    <a href="/admin/categories/new" class="btn btn-primary">+ Add New Category</a>
+  </div>
+
+  <div class="filters-bar">
+    <div class="search-wrap">
+      <input type="text" id="searchInput" placeholder="Search categories..." class="search-input" />
+    </div>
+  </div>
+
+  <div id="categoriesContainer">
+    <div class="loading-state" id="loadingState">Loading categories...</div>
+  </div>
+
+  <div class="pagination" id="pagination"></div>
+
+  <!-- Delete confirmation modal -->
+  <div class="modal-overlay hidden" id="deleteModal">
+    <div class="modal">
+      <h3 class="modal-title">Delete Category</h3>
+      <p class="modal-text">Are you sure you want to delete <strong id="deleteCatName"></strong>?</p>
+      <div class="modal-warning">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        <span>All posts in this category will be moved to <strong>Uncategorised</strong>.</span>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" id="cancelDeleteBtn">Cancel</button>
+        <button class="btn btn-danger" id="confirmDeleteBtn">Delete Category</button>
+      </div>
+    </div>
+  </div>
+
+  <style is:global>
+    .page-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+    .page-title{margin:0;font-size:22px;font-weight:800;color:var(--white);font-family:"Sora",sans-serif}
+    .btn{
+      padding:10px 20px;border-radius:10px;border:0;cursor:pointer;
+      font-weight:600;font-size:14px;font-family:inherit;transition:all .15s;
+      text-decoration:none;display:inline-flex;align-items:center;
+    }
+    .btn-primary{background:var(--accent);color:var(--bg)}
+    .btn-primary:hover{background:#2ee8a8}
+    .btn-ghost{background:rgb(255 255 255/.05);color:var(--text);border:1px solid var(--border)}
+    .btn-ghost:hover{background:rgb(255 255 255/.08)}
+    .btn-danger{background:var(--danger);color:#fff}
+    .btn-danger:hover{background:#ff6675}
+    .btn-sm{padding:7px 14px;font-size:13px;border-radius:8px}
+
+    .filters-bar{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+    .search-wrap{flex:1;min-width:200px}
+    .search-input{
+      width:100%;padding:10px 14px;border-radius:10px;
+      border:1px solid var(--border);background:var(--card);
+      color:var(--text);font-size:14px;font-family:inherit;
+    }
+    .search-input:focus{outline:none;border-color:var(--accent)}
+
+    .cat-table{width:100%;border-collapse:collapse}
+    .cat-table th{
+      text-align:left;font-size:12px;font-weight:600;color:var(--text-dim);
+      text-transform:uppercase;letter-spacing:.05em;padding:10px 14px;
+      border-bottom:1px solid var(--border);
+    }
+    .cat-table td{padding:12px 14px;border-bottom:1px solid var(--border);font-size:14px}
+    .cat-name{font-weight:600;color:var(--white)}
+    .cat-slug{font-size:12px;color:var(--text-dim);margin-top:2px}
+    .td-date{color:var(--text-dim);white-space:nowrap}
+    .td-count{text-align:center;font-weight:600;color:var(--white)}
+    .actions-cell{display:flex;gap:6px}
+    .link-action{
+      color:var(--accent);font-size:13px;font-weight:500;
+      text-decoration:none;padding:4px 8px;border-radius:6px;transition:background .12s;
+      background:none;border:none;cursor:pointer;font-family:inherit;
+    }
+    .link-action:hover{background:rgb(0 214 143/.08)}
+    .link-danger{color:var(--danger)}
+    .link-danger:hover{background:rgb(255 77 94/.08)}
+
+    .badge{
+      display:inline-block;padding:3px 10px;border-radius:999px;
+      font-size:12px;font-weight:600;text-transform:capitalize;
+    }
+    .badge-active{background:rgb(0 214 143/.12);color:var(--accent)}
+    .badge-inactive{background:rgb(255 255 255/.06);color:var(--text-dim)}
+
+    .loading-state,.empty-state{
+      text-align:center;padding:48px 20px;color:var(--text-dim);font-size:14px;
+      background:var(--card);border:1px solid var(--border);border-radius:12px;
+    }
+
+    .pagination{display:flex;justify-content:center;gap:6px;margin-top:20px}
+    .page-btn{
+      padding:8px 14px;border-radius:8px;border:1px solid var(--border);
+      background:var(--card);color:var(--text);font-size:13px;font-weight:500;
+      cursor:pointer;transition:all .12s;
+    }
+    .page-btn:hover{border-color:var(--accent);color:var(--accent)}
+    .page-btn.active{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+    .page-btn:disabled{opacity:.4;cursor:not-allowed}
+
+    .modal-overlay{
+      position:fixed;inset:0;background:rgb(0 0 0/.6);z-index:200;
+      display:flex;align-items:center;justify-content:center;
+    }
+    .modal-overlay.hidden{display:none}
+    .modal{
+      background:var(--card);border:1px solid var(--border);border-radius:16px;
+      padding:28px;max-width:440px;width:90%;
+    }
+    .modal-title{margin:0 0 12px;font-size:18px;font-weight:700;color:var(--white)}
+    .modal-text{margin:0 0 16px;font-size:14px;color:var(--text);line-height:1.5}
+    .modal-warning{
+      display:flex;align-items:flex-start;gap:10px;
+      padding:12px 14px;background:rgb(255 191 0/.08);border:1px solid rgb(255 191 0/.2);
+      border-radius:10px;margin-bottom:20px;font-size:13px;color:#fbbf24;line-height:1.4;
+    }
+    .modal-warning svg{flex-shrink:0;margin-top:2px}
+    .modal-actions{display:flex;gap:10px;justify-content:flex-end}
+  </style>
+
+  <script type="module">
+    const container = document.getElementById("categoriesContainer");
+    const loadingState = document.getElementById("loadingState");
+    const paginationEl = document.getElementById("pagination");
+    const searchInput = document.getElementById("searchInput");
+    const deleteModal = document.getElementById("deleteModal");
+    const deleteCatName = document.getElementById("deleteCatName");
+
+    let currentPage = 1;
+    let deleteTargetId = null;
+    let debounceTimer = null;
+
+    async function api(path, opts = {}) {
+      const res = await fetch(path, {
+        headers: { "Content-Type": "application/json" },
+        credentials: "include", ...opts,
+      });
+      if (res.status === 401) { window.location.href = "/admin/login"; throw new Error("unauthorized"); }
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "Request failed");
+      return data;
+    }
+
+    function esc(s) {
+      return String(s ?? "").replace(/[&<>"']/g, (c) => ({
+        "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+      }[c]));
+    }
+
+    function fmtDate(iso) {
+      if (!iso) return "—";
+      return new Date(iso).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
+    }
+
+    async function loadCategories() {
+      loadingState.style.display = "block";
+      container.innerHTML = "";
+      container.appendChild(loadingState);
+
+      const params = new URLSearchParams();
+      params.set("page", String(currentPage));
+      params.set("perPage", "20");
+      const search = searchInput.value.trim();
+      if (search) params.set("search", search);
+
+      try {
+        const data = await api(`/api/categories?${params.toString()}`);
+        const categories = data.categories || [];
+        const total = data.total || 0;
+        const perPage = 20;
+        const totalPages = Math.ceil(total / perPage);
+
+        if (categories.length === 0) {
+          container.innerHTML = '<div class="empty-state">No categories found. Create your first one.</div>';
+          paginationEl.innerHTML = "";
+          return;
+        }
+
+        let html = '<table class="cat-table"><thead><tr>';
+        html += '<th>Category</th><th style="text-align:center">Posts</th><th>Status</th><th>Created</th><th>Actions</th>';
+        html += '</tr></thead><tbody>';
+
+        for (const c of categories) {
+          html += `<tr>`;
+          html += `<td><div class="cat-name">${esc(c.name)}</div><div class="cat-slug">/${esc(c.slug)}</div></td>`;
+          html += `<td class="td-count">${c.post_count ?? 0}</td>`;
+          html += `<td><span class="badge badge-${c.status}">${esc(c.status)}</span></td>`;
+          html += `<td class="td-date">${fmtDate(c.created_at)}</td>`;
+          html += `<td><div class="actions-cell">`;
+          html += `<a href="/admin/categories/${c.id}/edit" class="link-action">Edit</a>`;
+          html += `<a href="/category/${esc(c.slug)}/" class="link-action" target="_blank" rel="noopener">View</a>`;
+          html += `<button class="link-action link-danger" data-delete="${c.id}" data-name="${esc(c.name)}">Delete</button>`;
+          html += '</div></td></tr>';
+        }
+        html += '</tbody></table>';
+        container.innerHTML = html;
+
+        renderPagination(totalPages);
+
+        document.querySelectorAll("[data-delete]").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            deleteTargetId = btn.dataset.delete;
+            deleteCatName.textContent = btn.dataset.name;
+            deleteModal.classList.remove("hidden");
+          });
+        });
+      } catch (e) {
+        container.innerHTML = `<div class="empty-state" style="color:var(--danger)">Error loading categories: ${esc(e.message)}</div>`;
+      }
+    }
+
+    function renderPagination(totalPages) {
+      if (totalPages <= 1) { paginationEl.innerHTML = ""; return; }
+      let html = "";
+      html += `<button class="page-btn" data-page="${currentPage - 1}" ${currentPage <= 1 ? "disabled" : ""}>← Prev</button>`;
+      for (let i = 1; i <= totalPages; i++) {
+        html += `<button class="page-btn ${i === currentPage ? "active" : ""}" data-page="${i}">${i}</button>`;
+      }
+      html += `<button class="page-btn" data-page="${currentPage + 1}" ${currentPage >= totalPages ? "disabled" : ""}>Next →</button>`;
+      paginationEl.innerHTML = html;
+      paginationEl.querySelectorAll(".page-btn").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const page = Number(btn.dataset.page);
+          if (page >= 1 && page !== currentPage) { currentPage = page; loadCategories(); }
+        });
+      });
+    }
+
+    document.getElementById("cancelDeleteBtn").addEventListener("click", () => {
+      deleteModal.classList.add("hidden");
+      deleteTargetId = null;
+    });
+
+    document.getElementById("confirmDeleteBtn").addEventListener("click", async () => {
+      if (!deleteTargetId) return;
+      try {
+        await api(`/api/categories/${deleteTargetId}`, { method: "DELETE" });
+        deleteModal.classList.add("hidden");
+        deleteTargetId = null;
+        loadCategories();
+      } catch (e) {
+        alert("Delete failed: " + e.message);
+      }
+    });
+
+    searchInput.addEventListener("input", () => {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => { currentPage = 1; loadCategories(); }, 300);
+    });
+
+    loadCategories();
+  </script>
+</AdminLayout>

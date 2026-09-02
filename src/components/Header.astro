@@ -5,9 +5,11 @@ import Icon from "./Icon.astro";
 const path = Astro.url.pathname;
 
 const links = [
+  { href: "/", label: "Home" },
   { href: "/games/", label: "Games" },
   { href: "/results/", label: "Results" },
-  { href: "/guide/how-to-play/", label: "How to Play" },
+  { href: "/blog/", label: "Blog" },
+  { href: "/guide/how-to-play/", label: "Guide" },
 ];
 
 const isActive = (href: string) => path === href || path.startsWith(href);
@@ -31,9 +33,9 @@ const isActive = (href: string) => path === href || path.startsWith(href);
       </ul>
 
       <div class="hidden items-center gap-2 md:flex">
-        <a href="/guide/how-to-play/#step-1" class="btn btn-ghost btn-sm">Register</a>
-        <a href="/games/" class="btn btn-primary btn-sm">
-          Play Now
+        <a href="/games/" class="btn btn-ghost btn-sm">Play Now</a>
+        <a href="/results/" class="btn btn-primary btn-sm">
+          Live Results
           <Icon name="arrow-right" class="h-4 w-4" />
         </a>
       </div>
@@ -67,8 +69,8 @@ const isActive = (href: string) => path === href || path.startsWith(href);
         }
       </ul>
       <div class="mt-3 grid grid-cols-2 gap-2 border-t border-white/8 pt-3">
-        <a href="/guide/how-to-play/#step-1" class="btn btn-ghost btn-sm">Register</a>
-        <a href="/games/" class="btn btn-primary btn-sm">Play Now</a>
+        <a href="/games/" class="btn btn-ghost btn-sm">Play Now</a>
+        <a href="/results/" class="btn btn-primary btn-sm">Live Results</a>
       </div>
     </div>
   </div>
@@ -96,7 +98,6 @@ const isActive = (href: string) => path === href || path.startsWith(href);
     setMenu(menu?.classList.contains("hidden") ?? false);
   });
 
-  // Close the panel when a link inside it is clicked or on escape.
   menu?.addEventListener("click", (e) => {
     if ((e.target as HTMLElement).closest("a")) setMenu(false);
   });

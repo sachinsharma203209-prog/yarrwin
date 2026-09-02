@@ -1,0 +1,110 @@
+---
+export const prerender = false;
+
+import { getEnv } from "../../lib/runtime";
+import { verifySessionToken, parseCookies, verifyLogin, createSessionToken } from "../../lib/auth";
+
+const env = getEnv(Astro);
+const cookies = parseCookies(Astro.request.headers.get("cookie"));
+const authed = await verifySessionToken(env.DB, cookies["yarrwin_session"]);
+if (authed) return Astro.redirect("/admin", 302);
+
+let error = "";
+
+if (Astro.request.method === "POST") {
+  const form = await Astro.request.formData();
+  const username = String(form.get("username") || "").trim();
+  const password = String(form.get("password") || "");
+
+  if (username && password) {
+    const ok = await verifyLogin(env.DB, username, password);
+    if (ok) {
+      const token = await createSessionToken(env.DB);
+      Astro.cookies.set("yarrwin_session", token, {
+        path: "/",
+        httpOnly: true,
+        sameSite: "lax",
+        secure: new URL(Astro.request.url).protocol === "https:",
+        maxAge: 7 * 24 * 60 * 60,
+      });
+      return Astro.redirect("/admin", 302);
+    } else {
+      error = "Invalid username or password";
+    }
+  } else {
+    error = "Please enter username and password";
+  }
+}
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Login — Yarrwin Admin</title>
+    <style>
+      *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+      :root{--bg:#04070d;--card:#0e1626;--border:rgba(255,255,255,0.08);--text:#d7deeb;--text-dim:#8797b3;--accent:#00d68f;--danger:#ff4d5e;--white:#eef2f9}
+      html,body{height:100%}
+      body{
+        font-family:"Inter",ui-sans-serif,system-ui,sans-serif;
+        background:var(--bg);color:var(--text);
+        display:grid;place-items:center;
+        background-image:radial-gradient(900px 600px at 50% 20%,rgb(0 214 143 / 0.06),transparent 60%);
+      }
+      .login-card{
+        width:100%;max-width:400px;padding:40px 32px;
+        background:var(--card);border:1px solid var(--border);border-radius:16px;
+        box-shadow:0 8px 32px rgb(0 0 0 / 0.4);
+      }
+      .brand{display:flex;align-items:center;gap:10px;margin-bottom:28px}
+      .brand .dot{width:10px;height:10px;border-radius:50%;background:var(--accent);animation:pulse 2s ease-in-out infinite}
+      @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+      .brand h1{font-size:20px;font-weight:800;color:var(--white);font-family:"Sora",sans-serif;letter-spacing:-.02em}
+      .field{margin-bottom:16px}
+      .field label{display:block;margin-bottom:6px;font-size:12px;font-weight:600;color:var(--text-dim);text-transform:uppercase;letter-spacing:.04em}
+      .field input{
+        width:100%;padding:11px 14px;border-radius:10px;
+        border:1px solid var(--border);background:var(--bg);
+        color:var(--text);font-size:14px;font-family:inherit;
+      }
+      .field input:focus{outline:none;border-color:var(--accent)}
+      .btn{
+        width:100%;padding:12px;border-radius:10px;border:0;cursor:pointer;
+        font-weight:700;font-size:14px;font-family:inherit;transition:all .15s;
+        background:var(--accent);color:var(--bg);margin-top:8px;
+      }
+      .btn:hover{background:#2ee8a8}
+      .error{
+        font-size:13px;color:var(--danger);margin-top:12px;padding:10px 12px;
+        background:rgb(255 77 94 / 0.08);border-radius:8px;text-align:center;
+      }
+      .footer-text{margin-top:20px;text-align:center;font-size:12px;color:var(--text-dim)}
+    </style>
+  </head>
+  <body>
+    <div class="login-card">
+      <div class="brand">
+        <span class="dot"></span>
+        <h1>Yarrwin Admin</h1>
+      </div>
+
+      <form method="POST">
+        <div class="field">
+          <label for="username">Username</label>
+          <input type="text" id="username" name="username" autocomplete="username" required />
+        </div>
+        <div class="field">
+          <label for="password">Password</label>
+          <input type="password" id="password" name="password" autocomplete="current-password" required />
+        </div>
+        <button type="submit" class="btn">Sign In</button>
+        {error && <div class="error">{error}</div>}
+      </form>
+
+      <p class="footer-text">Yarrwin CMS v1.0</p>
+    </div>
+  </body>
+</html>

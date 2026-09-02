@@ -1,431 +1,432 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
-import Hero from "../components/Hero.astro";
-import TickerMarquee from "../components/TickerMarquee.astro";
-import LiveBoard from "../components/LiveBoard.astro";
 import SectionHeading from "../components/SectionHeading.astro";
-import GameCard from "../components/GameCard.astro";
-import ResultsTable from "../components/ResultsTable.astro";
-import FAQSection from "../components/FAQSection.astro";
-import CtaBand from "../components/CtaBand.astro";
-import Icon from "../components/Icon.astro";
-import { history } from "../lib/simulator";
-import { rowsFor } from "../lib/rows";
+import FaqAccordion from "../components/FaqAccordion.astro";
+import { getEnv } from "../lib/runtime";
+import { listPosts, listCategories } from "../lib/db";
 
-/* Server-rendered WinGo preview — crawlable, mirrors the live board logic. */
-const winGoPreview = rowsFor("wingo", history("wingo", 10));
+const env = getEnv(Astro);
+const { posts } = await listPosts(env.DB, { onlyPublished: true, page: 1 });
+const catResult = await listCategories(env.DB, { onlyActive: true });
+const categories = catResult.categories;
+const latestPosts = posts.slice(0, 3);
 
-const games = [
+const homeFaqs = [
   {
-    icon: "wingo" as const,
-    name: "WinGo — Colour Prediction",
-    tag: "60s draws",
-    tagTone: "chip-green" as const,
-    description:
-      "The flagship colour-prediction game. Predict Green, Red or Violet, pick a number from 0–9, or call Big and Small — a fresh draw every single minute.",
-    bullets: ["Minute-by-minute draws", "Nine ways to win per period", "Full colour history archive"],
-    resultsHref: "/results/#wingo",
-    accent: "brand" as const,
+    q: "What is Yarrwin?",
+    a: "Yarrwin is an online gaming and lottery results platform that provides draw results, game guides and strategy articles. Users can browse WinGo colour prediction results, K3 dice lottery draws, 5D lottery outcomes and Aviator round history.",
   },
   {
-    icon: "k3" as const,
-    name: "K3 Lottery",
-    tag: "3-min draws",
-    tagTone: "chip-gold" as const,
-    description:
-      "Fast dice action: three dice, dozens of markets. Bet the exact sum, call Big or Small, Odd or Even, or chase premium triple payouts.",
-    bullets: ["Sum, size and parity markets", "Dice-verified transparency", "Draws every three minutes"],
-    resultsHref: "/results/#k3",
-    accent: "gold" as const,
+    q: "How do I log in to Yarrwin?",
+    a: "Open the official Yarrwin website in your browser, tap the Login button and enter your registered email or mobile number along with your password. If two-factor authentication is enabled you will also need to approve the second-factor prompt.",
   },
   {
-    icon: "5d" as const,
-    name: "5D Lottery",
-    tag: "5-min draws",
-    tagTone: "chip-violet" as const,
-    description:
-      "Five digits, A through E, drawn every five minutes. Play individual digits, position combinations or the total sum across ten prediction markets.",
-    bullets: ["Five-digit result matrix", "Digit and sum markets", "Clean tabular history"],
-    resultsHref: "/results/#5d",
-    accent: "violet" as const,
+    q: "Is Yarrwin free to use?",
+    a: "Browsing draw results, reading game guides and checking the results archive on Yarrwin is completely free. Placing real-money bets requires a funded account on the actual game platform, which is separate from this informational site.",
   },
   {
-    icon: "aviator" as const,
-    name: "Aviator & Slots",
-    tag: "Instant rounds",
-    tagTone: "chip-red" as const,
-    description:
-      "Ride the multiplier curve in provably fair Aviator rounds, or explore a curated slots lobby with certified RNG and published return-to-player figures.",
-    bullets: ["Cash-out multiplier rounds", "Certified RNG slots lobby", "Round-by-round crash history"],
-    resultsHref: "/results/",
-    accent: "red" as const,
+    q: "What games are available on Yarrwin?",
+    a: "Yarrwin covers several game categories including WinGo colour prediction, the K3 three-dice lottery, the five-digit 5D lottery and provably-fair Aviator rounds. Each game has its own rules page and strategy guide.",
+  },
+  {
+    q: "Are Yarrwin hack claims real?",
+    a: "No. Claims that promise guaranteed wins, modified APKs or secret cheat codes are scams designed to steal your credentials or install malware. Never share your OTP, password or install unofficial apps. Responsible play means accepting that every draw is random.",
+  },
+  {
+    q: "How do I verify a Yarrwin gift code?",
+    a: "Gift codes should only be redeemed through the official Yarrwin platform. If someone contacts you claiming to offer a special code, verify the source through your official account dashboard before entering it anywhere.",
+  },
+  {
+    q: "What is Yarrwin Club?",
+    a: "Yarrwin Club is a community feature within the platform where users can access exclusive updates and group activities. Information about club features is available through your official account settings.",
   },
 ];
 
-const features = [
-  {
-    icon: "eye" as const,
-    title: "Transparent mechanics",
-    body: "Every draw is generated from a commit-reveal scheme: the outcome hash is published before the draw and can be re-verified after it. No opaque server rolls, no retro-fitted explanations — the math is on the table.",
-  },
-  {
-    icon: "bolt" as const,
-    title: "Lightning-fast settlement",
-    body: "Results land in under three seconds and wallets update instantly — no waiting rooms, no pending limbo. The results ticker and archive update the moment a period closes, minute after minute.",
-  },
-  {
-    icon: "archive" as const,
-    title: "Permanent results archive",
-    body: "Every WinGo, K3 and 5D period is stored with its number, colour, size and timestamp, forever browsable at /results/. What is drawn is never edited — history is written once, by the draw itself.",
-  },
-  {
-    icon: "lock" as const,
-    title: "Bank-grade security",
-    body: "A 256-bit encrypted session layer, hashed credentials and optional two-factor authentication protect every account. Withdrawals require explicit confirmation, and wallet ledgers are fully itemised.",
-  },
-];
-
-const steps = [
-  {
-    icon: "user" as const,
-    title: "Create your account",
-    body: "Register with an email and a strong password in under a minute, then switch on two-factor authentication. Setup takes one minute and protects every session after it.",
-  },
-  {
-    icon: "wallet" as const,
-    title: "Fund your wallet",
-    body: "Deposit with your preferred local payment method, set a session budget, and track every movement in an itemised ledger. Withdrawals mirror the same transparent flow in reverse.",
-  },
-  {
-    icon: "trophy" as const,
-    title: "Play & verify results",
-    body: "Pick a game, place your prediction before the countdown ends, and watch the draw settle in seconds. Every outcome is logged to the public archive, verifiable by anyone.",
-  },
-];
-
-const stats = [
-  { value: "2.4M+", label: "Draws settled" },
-  { value: "<3s", label: "Result settlement" },
-  { value: "99.98%", label: "Platform uptime" },
-  { value: "24/7", label: "Results archive" },
-];
-
-const gamesSchema = {
+const faqSchema = {
   "@context": "https://schema.org",
-  "@type": "ItemList",
-  name: "Yarrwin game categories",
-  itemListOrder: "https://schema.org/ItemListOrderAscending",
-  itemListElement: games.map((g, i) => ({
-    "@type": "ListItem",
-    position: i + 1,
-    name: g.name,
-    url: new URL(`/games/#${g.icon}`, Astro.site ?? "https://yarrwin.com").href,
+  "@type": "FAQPage",
+  mainEntity: homeFaqs.map((f) => ({
+    "@type": "Question",
+    name: f.q,
+    acceptedAnswer: { "@type": "Answer", text: f.a },
   })),
 };
+
+const gameCards = [
+  { name: "WinGo", desc: "60-second colour prediction with Green, Red and Violet markets", href: "/games/#wingo", icon: "🎯" },
+  { name: "K3 Lottery", desc: "Three-dice lottery with Big/Small, Odd/Even and triple bets", href: "/games/#k3", icon: "🎲" },
+  { name: "5D Lottery", desc: "Five-digit draw with sum markets and per-digit bets", href: "/games/#5d", icon: "🔢" },
+  { name: "Aviator", desc: "Provably-fair crash game with auto cash-out controls", href: "/games/#aviator", icon: "✈" },
+];
 ---
 
 <BaseLayout
-  title="Yarrwin — Official Online Game & Lottery Results Platform"
-  description="The official Yarrwin game & lottery results platform — WinGo, K3 & 5D draws, secure Yarrwin login, gift-code rewards and a verifiable public results archive."
-  keywords="yarrwin, yarrwin login, yarrwin game, yarrwin game login, yarrwin lottery, yarrwin club, yarrwin gift code, yarrwin hack, wingo results, colour prediction game, k3 lottery, 5d lottery, aviator"
-  schema={[gamesSchema]}
+  title="Yarrwin Game, Login Help and Platform Guide — Online Gaming & Lottery"
+  description="Yarrwin is an online gaming and lottery results platform. Check draw results, read game guides for WinGo, K3, 5D and Aviator, and learn how to log in safely."
+  keywords="yarrwin, yarrwin login, yarrwin game, yarrwin game login, yarrwin lottery, yarrwin club, yarrwin gift code"
+  schema={[faqSchema]}
 >
-  <TickerMarquee />
-  <Hero />
+  {/* ── Section 1: Header (built-in via BaseLayout) ── */}
 
-  <!-- Live board -->
-  <section class="section-pad !pt-2 pb-16 md:pb-20">
-    <SectionHeading
-      eyebrow="Live board · demo feed"
-      title="Live results, updated every period"
-      sub="Countdowns run in real time and new draws land the second a period closes. This demonstration build generates deterministic simulated results — connect your live feed in src/lib/simulator.ts."
-    />
-    <div class="mt-8">
-      <LiveBoard />
-    </div>
-  </section>
+  {/* ── Section 2: Hero ── */}
+  <section class="relative overflow-hidden">
+    <div class="grid-bg pointer-events-none absolute inset-0" aria-hidden="true"></div>
+    <div class="pointer-events-none absolute -top-48 left-1/2 h-[520px] w-[820px] -translate-x-1/2 rounded-full bg-brand-500/10 blur-[130px]" aria-hidden="true"></div>
 
-  <!-- Stats bar -->
-  <section class="container-site" aria-label="Platform statistics">
-    <div class="glass grid grid-cols-2 gap-6 rounded-3xl px-6 py-8 md:grid-cols-4 md:py-10">
-      {
-        stats.map((s) => (
-          <div class="text-center">
-            <p class="num text-gradient-brand text-3xl font-extrabold md:text-4xl">{s.value}</p>
-            <p class="mt-1.5 text-xs font-medium uppercase tracking-[0.14em] text-mist-400">{s.label}</p>
-          </div>
-        ))
-      }
-    </div>
-  </section>
-
-  <!-- Game categories -->
-  <section id="games" class="section-pad">
-    <div class="container-site">
-      <SectionHeading
-        eyebrow="Game categories"
-        title="Four ways to play, one standard of fairness"
-        sub="From minute-by-minute colour prediction to five-digit lottery matrices — every Yarrwin game publishes its rules, odds and full result history up front."
-      />
-      <div class="mt-10 grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
-        {
-          games.map((g) => (
-            <GameCard {...g} />
-          ))
-        }
+    <div class="container-site relative pt-10 pb-16 md:pt-14 md:pb-20">
+      <div class="mx-auto max-w-3xl text-center">
+        <p class="eyebrow">Online Gaming & Lottery Guide</p>
+        <h1 class="mt-4 text-4xl font-extrabold leading-tight tracking-tight text-mist-100 md:text-5xl lg:text-6xl">
+          Yarrwin <span class="text-gradient-brand">Game, Login Help &amp; Platform Guide</span>
+        </h1>
+        <p class="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-mist-400">
+          Your independent guide to the Yarrwin gaming platform. Check draw results for WinGo, K3 and 5D lotteries, learn safe login practices, and read strategy articles — all in one place.
+        </p>
+        <div class="mt-8 flex flex-wrap justify-center gap-3">
+          <a href="/games/" class="btn btn-primary">Explore Games</a>
+          <a href="/results/" class="btn btn-ghost">View Results</a>
+        </div>
       </div>
     </div>
   </section>
 
-  <!-- Why Yarrwin -->
+  {/* ── Section 3: Navigation / Action Cards ── */}
   <section class="section-pad bg-ink-850/40">
     <div class="container-site">
       <SectionHeading
-        eyebrow="Engineered for trust"
-        title="Why players choose Yarrwin"
-        sub="Speed is easy to claim and hard to prove. That is why every Yarrwin promise is anchored to something you can inspect yourself: published mechanics, live countdowns and an archive no one can quietly edit."
+        eyebrow="Quick Access"
+        title="Explore Yarrwin"
+        description="Jump straight to the section you need."
       />
-      <div class="mt-10 grid gap-5 md:grid-cols-2">
-        {
-          features.map((f) => (
-            <article class="glass rounded-3xl p-6 shadow-card md:p-7">
-              <span class="grid h-11 w-11 place-items-center rounded-xl bg-brand-500/12 text-brand-300">
-                <Icon name={f.icon} class="h-5 w-5" />
-              </span>
-              <h3 class="mt-5 font-display text-lg font-bold tracking-tight">{f.title}</h3>
-              <p class="mt-2.5 text-sm leading-relaxed text-mist-400">{f.body}</p>
-            </article>
-          ))
-        }
+      <div class="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <a href="/games/" class="glass rounded-3xl p-6 transition duration-200 hover:-translate-y-1 hover:border-brand-500/30">
+          <span class="text-3xl">🎮</span>
+          <h3 class="mt-3 font-display text-lg font-bold text-mist-100">Games Hub</h3>
+          <p class="mt-2 text-sm text-mist-400">WinGo, K3, 5D and Aviator rules and odds.</p>
+        </a>
+        <a href="/results/" class="glass rounded-3xl p-6 transition duration-200 hover:-translate-y-1 hover:border-brand-500/30">
+          <span class="text-3xl">📊</span>
+          <h3 class="mt-3 font-display text-lg font-bold text-mist-100">Results Archive</h3>
+          <p class="mt-2 text-sm text-mist-400">Historical draw tables for every game.</p>
+        </a>
+        <a href="/guide/how-to-play/" class="glass rounded-3xl p-6 transition duration-200 hover:-translate-y-1 hover:border-brand-500/30">
+          <span class="text-3xl">📖</span>
+          <h3 class="mt-3 font-display text-lg font-bold text-mist-100">Beginner Guide</h3>
+          <p class="mt-2 text-sm text-mist-400">Step-by-step guide to safe, responsible play.</p>
+        </a>
+        <a href="/blog/" class="glass rounded-3xl p-6 transition duration-200 hover:-translate-y-1 hover:border-brand-500/30">
+          <span class="text-3xl">📰</span>
+          <h3 class="mt-3 font-display text-lg font-bold text-mist-100">Blog &amp; Guides</h3>
+          <p class="mt-2 text-sm text-mist-400">Strategy articles and platform news.</p>
+        </a>
       </div>
     </div>
   </section>
 
-  <!-- Latest WinGo results preview -->
+  {/* ── Section 4: Game Information ── */}
   <section class="section-pad">
     <div class="container-site">
-      <div class="flex flex-wrap items-end justify-between gap-4">
-        <SectionHeading
-          eyebrow="Latest WinGo results"
-          title="Today's colour prediction outcomes"
-          sub="A live snapshot of the most recent WinGo periods — number, colour, size and UTC settlement time. The full searchable archive covers every game."
-        />
-        <a href="/results/" class="btn btn-ghost btn-sm mb-1">
-          Full archive
-          <Icon name="arrow-right" class="h-4 w-4" />
-        </a>
+      <SectionHeading
+        eyebrow="Game Categories"
+        title="Yarrwin Game Categories"
+        description="Each game on the Yarrwin platform settles on a different cadence and market structure."
+      />
+      <div class="mt-10 grid gap-6 sm:grid-cols-2">
+        {gameCards.map((game) => (
+          <a href={game.href} class="glass group flex items-start gap-5 rounded-3xl p-6 transition duration-200 hover:-translate-y-1 hover:border-brand-500/30">
+            <span class="text-4xl">{game.icon}</span>
+            <div>
+              <h3 class="font-display text-xl font-bold text-mist-100 group-hover:text-brand-300">{game.name}</h3>
+              <p class="mt-2 text-sm leading-relaxed text-mist-400">{game.desc}</p>
+            </div>
+          </a>
+        ))}
       </div>
-      <div class="mt-8">
-        <ResultsTable
-          caption="Ten most recent WinGo 1-minute results: period, winning number, colour, size and UTC time"
-          headers={["Period", "Number", "Colour", "Size", "Time (UTC)"]}
-          rows={winGoPreview}
-        />
+      <p class="mt-8 text-center text-sm text-mist-500">
+        Detailed rules, payout tables and strategy tips are available on the <a href="/games/" class="prose-link">Games Hub</a>.
+      </p>
+    </div>
+  </section>
+
+  {/* ── Section 5: Login Help ── */}
+  <section id="login" class="section-pad bg-ink-850/40 scroll-mt-28">
+    <div class="container-site grid gap-10 lg:grid-cols-2">
+      <div>
+        <p class="eyebrow">🔐 Safe Access</p>
+        <h2 class="mt-4 font-display text-3xl font-extrabold tracking-tight">How to Access Yarrwin Login Safely</h2>
+        <p class="mt-5 leading-relaxed text-mist-300">
+          Accessing your Yarrwin game login safely starts with verifying the URL in your browser. Always type the address directly or use a bookmarked link rather than following unsolicited messages or ads. Check for the padlock icon and confirm the domain matches the official Yarrwin website before entering any credentials.
+        </p>
+        <p class="mt-4 leading-relaxed text-mist-300">
+          Once on the login page, enter your registered email or mobile number and your password. If two-factor authentication is enabled, approve the prompt through your authenticator app. Enable 2FA from your account dashboard as soon as possible — it adds a critical layer of protection to your Yarrwin login.
+        </p>
+        <p class="mt-4 leading-relaxed text-mist-300">
+          Common login issues include entering the wrong password, not receiving the 2FA code, or accessing an outdated bookmark. If you are locked out, use the password reset flow and check your email for the recovery link. Clear your browser cache if the page does not load correctly.
+        </p>
+      </div>
+      <div class="flex flex-col gap-4">
+        <div class="glass rounded-3xl p-6">
+          <h3 class="font-display text-base font-bold text-mist-100">Login Safety Checklist</h3>
+          <ul class="mt-4 space-y-3 text-sm leading-relaxed text-mist-300">
+            <li class="flex gap-3">✓ Always use the official Yarrwin URL directly</li>
+            <li class="flex gap-3">✓ Enable two-factor authentication</li>
+            <li class="flex gap-3">✓ Never share your password or OTP codes</li>
+            <li class="flex gap-3">✓ Log out after each session on shared devices</li>
+            <li class="flex gap-3">✓ Report suspicious login alerts immediately</li>
+          </ul>
+        </div>
+        <div class="glass rounded-3xl p-6">
+          <h3 class="font-display text-base font-bold text-mist-100">Common Login Issues</h3>
+          <p class="mt-3 text-sm leading-relaxed text-mist-400">
+            Forgot your password? Use the reset link sent to your registered email. Not receiving 2FA codes? Check your authenticator app is synced. Still stuck? Contact Yarrwin support through your account dashboard.
+          </p>
+        </div>
       </div>
     </div>
   </section>
 
-  <!-- How it works -->
-  <section id="how-it-works" class="section-pad bg-ink-850/40">
+  {/* ── Section 6: Lottery / Results ── */}
+  <section id="lottery" class="section-pad scroll-mt-28">
     <div class="container-site">
       <SectionHeading
-        eyebrow="How it works"
-        title="From registration to verified results in three steps"
-        sub="No complicated onboarding, no hidden mechanics. Here is the entire journey from an empty browser tab to your first verified draw."
-        align="center"
+        eyebrow="Draw Results"
+        title="Yarrwin Lottery and Results"
+        description="Every draw period is published to the results archive with its full outcome."
       />
-      <ol class="mt-12 grid gap-5 md:grid-cols-3">
-        {
-          steps.map((s, i) => (
-            <li class="glass relative rounded-3xl p-6 shadow-card md:p-7">
-              <span class="num absolute right-6 top-5 text-4xl font-extrabold text-white/8">{`0${i + 1}`}</span>
-              <span class="grid h-11 w-11 place-items-center rounded-xl bg-gold-400/12 text-gold-300">
-                <Icon name={s.icon} class="h-5 w-5" />
-              </span>
-              <h3 class="mt-5 font-display text-lg font-bold tracking-tight">{s.title}</h3>
-              <p class="mt-2.5 text-sm leading-relaxed text-mist-400">{s.body}</p>
-            </li>
-          ))
-        }
-      </ol>
-      <div class="mt-10 text-center">
-        <a href="/guide/how-to-play/" class="btn btn-gold">
-          Read the full beginner guide
-          <Icon name="arrow-right" class="h-4 w-4" />
-        </a>
+      <div class="mt-10 grid gap-8 lg:grid-cols-2">
+        <div>
+          <h3 class="font-display text-xl font-bold text-mist-100">What the results archive shows</h3>
+          <p class="mt-4 leading-relaxed text-mist-300">
+            Yarrwin publishes the outcome of every draw period to a permanent, uneditable archive. WinGo periods settle every 60 seconds with a winning digit, its colour and its size. K3 draws three dice every three minutes and shows the sum, parity and size. 5D draws five digits every five minutes with the full A-E matrix and sum total.
+          </p>
+          <p class="mt-4 leading-relaxed text-mist-300">
+            The archive is designed for transparency. You can verify any period from its archive row alone without relying on third-party sources. This makes it easy to cross-check results and understand the distribution of outcomes across any time range.
+          </p>
+        </div>
+        <div class="flex flex-col gap-4">
+          <a href="/results/" class="glass rounded-3xl p-6 transition duration-200 hover:-translate-y-1">
+            <h4 class="font-display text-lg font-bold text-mist-100">View Live Results</h4>
+            <p class="mt-2 text-sm text-mist-400">Open the full results archive with WinGo, K3 and 5D draw tables.</p>
+          </a>
+          <div class="glass rounded-3xl p-6">
+            <h4 class="font-display text-lg font-bold text-mist-100">How results are published</h4>
+            <p class="mt-2 text-sm leading-relaxed text-mist-400">
+              Results are written to the archive within seconds of each period closing. Each row includes the period number, winning outcome, colour, size and UTC timestamp. The archive is append-only — rows are never edited after publication.
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   </section>
 
-  <!-- ============ SEO editorial: the definitive Yarrwin guide ============ -->
-  <section id="about-yarrwin" class="section-pad" aria-label="About Yarrwin">
+  {/* ── Section 7: Yarrwin Club ── */}
+  <section id="club" class="section-pad bg-ink-850/40 scroll-mt-28">
+    <div class="container-site grid gap-10 lg:grid-cols-2">
+      <div>
+        <p class="eyebrow">👥 Community</p>
+        <h2 class="mt-4 font-display text-3xl font-extrabold tracking-tight">What Is Yarrwin Club?</h2>
+        <p class="mt-5 leading-relaxed text-mist-300">
+          Yarrwin Club is a community feature within the platform designed to connect users with group activities and exclusive updates. Club members can access special announcements, participate in community events and stay informed about new game launches and feature updates.
+        </p>
+        <p class="mt-4 leading-relaxed text-mist-300">
+          Information about Yarrwin Club features, membership tiers and available benefits is managed through your official account settings. If you have an active Yarrwin account, check the Club section in your dashboard for the latest details on what is currently available.
+        </p>
+      </div>
+      <div class="glass rounded-3xl p-8">
+        <h3 class="font-display text-lg font-bold text-mist-100">Club Features</h3>
+        <ul class="mt-4 space-y-3 text-sm leading-relaxed text-mist-300">
+          <li class="flex gap-3"><span class="text-brand-300 font-bold">•</span> Community events and group activities</li>
+          <li class="flex gap-3"><span class="text-brand-300 font-bold">•</span> Exclusive announcements and updates</li>
+          <li class="flex gap-3"><span class="text-brand-300 font-bold">•</span> New game launch notifications</li>
+          <li class="flex gap-3"><span class="text-brand-300 font-bold">•</span> Feature preview access</li>
+          <li class="flex gap-3"><span class="text-brand-300 font-bold">•</span> Dashboard-based membership management</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  {/* ── Section 8: Gift Code Safety ── */}
+  <section id="gift-code" class="section-pad scroll-mt-28">
+    <div class="container-site grid gap-10 lg:grid-cols-2">
+      <div>
+        <p class="eyebrow">🎁 Gift Codes</p>
+        <h2 class="mt-4 font-display text-3xl font-extrabold tracking-tight">How to Verify a Yarrwin Gift Code</h2>
+        <p class="mt-5 leading-relaxed text-mist-300">
+          Yarrwin gift codes are promotional codes that may be distributed through official channels. If you receive a gift code, always verify that the source is genuinely from Yarrwin before entering it into any field. Legitimate codes are delivered through your official account, official notifications or verified partner channels.
+        </p>
+        <p class="mt-4 leading-relaxed text-mist-300">
+          Be cautious of codes shared through social media comments, unsolicited messages or unofficial websites. These may be phishing attempts designed to capture your login credentials. A genuine Yarrwin gift code will be redeemable directly from your account dashboard — you should never need to visit a third-party site or provide your password to claim a code.
+        </p>
+      </div>
+      <div class="glass rounded-3xl p-6">
+        <h3 class="font-display text-base font-bold text-mist-100">Gift Code Safety Tips</h3>
+        <ul class="mt-4 space-y-3 text-sm leading-relaxed text-mist-300">
+          <li class="flex gap-3"><span class="text-brand-300 font-bold">•</span> Only redeem codes through your official Yarrwin account</li>
+          <li class="flex gap-3"><span class="text-brand-300 font-bold">•</span> Never enter gift codes on third-party websites</li>
+          <li class="flex gap-3"><span class="text-brand-300 font-bold">•</span> Ignore unsolicited DMs offering "exclusive" codes</li>
+          <li class="flex gap-3"><span class="text-brand-300 font-bold">•</span> Check the code source before clicking any redemption link</li>
+          <li class="flex gap-3"><span class="text-brand-300 font-bold">•</span> Report suspicious code offers to Yarrwin support</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  {/* ── Section 9: Hack Scam Warning ── */}
+  <section id="scam-warning" class="section-pad bg-ink-850/40 scroll-mt-28">
     <div class="container-site">
-      <div class="mx-auto max-w-3xl">
-        <p class="eyebrow">The definitive Yarrwin guide</p>
-
-        <h2 class="article-h2 mt-4">What is Yarrwin? The official game &amp; lottery results platform</h2>
-        <p class="article-p">
-          Yarrwin is an online gaming and lottery results platform built around one promise:
-          every draw, published, the second it happens. The official
-          <a class="prose-link" href="/games/">Yarrwin game</a> library spans four fast-cycle
-          formats — WinGo colour prediction, the K3 dice lottery, the 5D five-digit lottery and
-          Aviator — and each of them settles in minutes, not days. Instead of hiding outcomes
-          behind a black box, the platform pairs every period with its winning number, colour,
-          size and a UTC timestamp, then files it in a permanent public
-          <a class="prose-link" href="/results/">results archive</a>. If you are comparing
-          gaming sites, that single design decision is what separates the official yarrwin.com
-          experience from copycat domains and unofficial mirrors.
-        </p>
-        <p class="article-p">
-          This page is the definitive starting point for everything Yarrwin: how the
-          <strong class="text-mist-100">Yarrwin login</strong> flow works, where legitimate
-          gift codes come from, why no <strong class="text-mist-100">Yarrwin hack</strong> can
-          influence a draw, and how to read the lottery tables like a professional. Bookmark
-          it — it is updated alongside the platform itself.
-        </p>
-
-        <h2 class="article-h2" id="login-guide">Yarrwin login: how to access your account safely</h2>
-        <p class="article-p">
-          Everything on the platform sits behind one secure gateway: your Yarrwin login. It
-          protects your wallet, your limits and your personal result history, so it is worth
-          doing properly. The whole flow takes less than a minute, and doing it on the official
-          domain is the difference between a secure account and a compromised one.
-        </p>
-
-        <h3 class="article-h3">Create your Yarrwin account</h3>
-        <p class="article-p">
-          New players register once and sign in everywhere afterwards. Registration asks for an
-          email address or mobile number, a strong password and nothing else — no fees and no
-          download. The step-by-step walkthrough, including how to set a session budget during
-          signup, lives in our <a class="prose-link" href="/guide/how-to-play/">beginner's
-          guide</a>; <a class="prose-link" href="/guide/how-to-play/#step-1">step one</a> covers
-          account creation end to end.
-        </p>
-
-        <h3 class="article-h3">Complete your Yarrwin game login step by step</h3>
-        <ol class="article-ol">
-          <li>
-            Open the official domain — <span class="num text-mist-100">yarrwin.com</span> — and
-            choose <strong class="text-mist-100">Login</strong> in the top navigation. Bookmark
-            it: phishing copies of the Yarrwin game login page are the number-one account risk.
-          </li>
-          <li>Enter the email or mobile number and password you registered with.</li>
-          <li>
-            If two-factor authentication is enabled, approve the verification prompt or enter
-            the one-time code from your authenticator app.
-          </li>
-          <li>
-            You land on your wallet dashboard, where balances update the instant a draw settles.
-          </li>
-        </ol>
-        <p class="article-p">
-          Forgotten passwords reset through the login page itself. Support will never ask for
-          your password or an OTP over chat — anyone who does is impersonating the platform.
-        </p>
-
-        <h3 class="article-h3">Keep your Yarrwin login secure</h3>
-        <p class="article-p">
-          Three habits cover almost every account takeover: use a password you never reuse
-          anywhere, keep two-factor authentication switched on, and treat every unsolicited
-          "security check" message as hostile until proven otherwise. The platform hashes
-          credentials and encrypts sessions end to end, but the strongest link is still you.
-          Our <a class="prose-link" href="/guide/how-to-play/#step-2">account security
-          checklist</a> turns each habit into a two-minute routine.
-        </p>
-
-        <h2 class="article-h2" id="gift-code">Yarrwin gift code: official rewards and how to redeem them</h2>
-        <p class="article-p">
-          A <strong class="text-mist-100">Yarrwin gift code</strong> is a promotional code
-          released through the platform's own channels — event banners on the homepage, the
-          announcements board inside your account and Yarrwin Club campaigns. Codes credit
-          bonus funds or free-round vouchers straight to your wallet and redeem in seconds.
-          What a gift code never requires is a "generator" website, a deposit to a stranger's
-          wallet or an APK download; any source asking for those is not official.
-        </p>
-
-        <h3 class="article-h3">How to redeem a Yarrwin gift code</h3>
-        <ol class="article-ol">
-          <li>Complete your Yarrwin login and open the <strong class="text-mist-100">Wallet</strong> screen.</li>
-          <li>Select <strong class="text-mist-100">Gift code</strong> from the wallet menu.</li>
-          <li>Paste the code exactly as issued — codes are case-sensitive and time-limited.</li>
-          <li>Confirm, and the bonus appears in your itemised ledger immediately.</li>
-        </ol>
-
-        <h3 class="article-h3">How to spot fake gift-code generators</h3>
-        <p class="article-p">
-          Sites promising unlimited codes, "mod" versions of the Yarrwin game or cracked
-          prediction tools all follow the same script: harvest logins, push malware or charge
-          activation fees. Official codes are never sold, never gated behind surveys and never
-          distributed through unofficial social accounts. When in doubt, open the announcements
-          board — if a code is not listed there, it does not exist.
-        </p>
-
-        <h2 class="article-h2" id="safety">Is there a working Yarrwin hack? The honest answer</h2>
-        <p class="article-p">
-          Search interest in the phrase "Yarrwin hack" is exactly why this section exists. Here
-          is the direct answer: no working Yarrwin hack, predictor or mod APK can influence or
-          forecast a draw. Outcomes are produced by random number generation under a
-          commit-reveal scheme — the outcome hash is published before each period and can be
-          re-verified in the <a class="prose-link" href="/results/">archive</a> after it. A draw
-          that is committed before it happens cannot be steered by an external tool, because
-          there is nothing left to steer.
-        </p>
-        <p class="article-p">
-          Every "hack" download is far more likely to harm you than help you: these files are
-          carriers for credential stealers, remote-access trojans and fake wallet apps. The
-          people selling them profit twice — once from the download and again when they drain
-          the accounts they harvest. Play the published odds instead: the
-          <a class="prose-link" href="/games/">payout tables for every Yarrwin game</a> are
-          open, and the strategy guides explain exactly how each market pays. That is the only
-          edge that exists.
-        </p>
-        <p class="article-p">
-          If you encounter a site or account advertising a Yarrwin hack, report it through
-          official support so it can be investigated and taken down. And if gaming ever stops
-          feeling like entertainment, the
-          <a class="prose-link" href="/guide/how-to-play/#play-safe">play-safe resources</a>
-          cover deposit limits, session timers and self-exclusion.
-        </p>
-
-        <h2 class="article-h2" id="results-guide">Yarrwin lottery results: real-time, archived, verifiable</h2>
-        <p class="article-p">
-          Results are the product, so they get first-class treatment. WinGo draws a fresh
-          period every 60 seconds, K3 every three minutes and 5D every five — and each outcome
-          reaches the homepage live board within seconds of settlement. The full
-          <a class="prose-link" href="/results/">Yarrwin lottery archive</a> stores every
-          period with its winning number, colour, size and UTC time in clean, crawlable tables,
-          with dedicated sections for <a class="prose-link" href="/results/#wingo">WinGo</a>,
-          <a class="prose-link" href="/results/#k3">K3</a> and
-          <a class="prose-link" href="/results/#5d">5D</a>. Nothing is pruned and nothing is
-          edited — history is written once, by the draw itself.
-        </p>
-        <p class="article-p">
-          Reading a table is simple: the period code encodes the date and sequence, the ball
-          column shows the winning number with its colour, and the size column records whether
-          it landed Big (5–9) or Small (0–4). Colour-prediction players can also scan recent
-          Green / Red / Violet streaks in the WinGo section before deciding how to play the
-          next period.
-        </p>
-
-        <h2 class="article-h2" id="club">Join the Yarrwin Club</h2>
-        <p class="article-p">
-          The <strong class="text-mist-100">Yarrwin Club</strong> is the platform's loyalty
-          programme for players who come back. Membership accrues automatically through regular
-          play — there is no separate fee — and tiers unlock progressively stronger perks:
-          exclusive gift codes, faster withdrawal handling, cashback on net losses and priority
-          support queues. Thresholds and seasonal terms are published openly on the
-          announcements board, because a rewards programme that hides its own rules would sit
-          oddly on a platform built around transparency.
-        </p>
+      <SectionHeading
+        eyebrow="⚠ Safety Warning"
+        title="Are Yarrwin Hack Claims Real?"
+        description="Protecting yourself from fake hack websites and modified applications."
+      />
+      <div class="mt-10 grid gap-8 lg:grid-cols-2">
+        <div>
+          <p class="leading-relaxed text-mist-300">
+            No, Yarrwin hack claims are not real. Every website, video or message that promises guaranteed wins, "predictor" tools, modified APKs or secret cheat codes is a scam. These operations exist solely to steal your account credentials, install malware on your device or harvest your personal information.
+          </p>
+          <p class="mt-4 leading-relaxed text-mist-300">
+            The Yarrwin platform uses provably fair mechanics, which means each draw outcome is determined by cryptographic commitments that cannot be altered after the fact. No external tool, script or "hack" can predict or manipulate the result of a draw that has already been committed. Anyone claiming otherwise is misleading you.
+          </p>
+          <p class="mt-4 leading-relaxed text-mist-300">
+            Never install modified APKs from unofficial sources, never share your OTP or password with anyone, and never enter your Yarrwin login credentials on any site other than the official domain. If something claims to be a "Yarrwin hack" — it is a trap.
+          </p>
+        </div>
+        <div class="flex flex-col gap-4">
+          <div class="glass rounded-3xl p-6">
+            <h3 class="font-display text-base font-bold text-mist-100">Red Flags to Watch For</h3>
+            <ul class="mt-4 space-y-3 text-sm leading-relaxed text-mist-300">
+              <li class="flex gap-3"><span class="text-[#ff8a94] font-bold">✗</span> "Guaranteed win" promises</li>
+              <li class="flex gap-3"><span class="text-[#ff8a94] font-bold">✗</span> Modified APK downloads</li>
+              <li class="flex gap-3"><span class="text-[#ff8a94] font-bold">✗</span> Requesting your OTP or password</li>
+              <li class="flex gap-3"><span class="text-[#ff8a94] font-bold">✗</span> Third-party "prediction" websites</li>
+              <li class="flex gap-3"><span class="text-[#ff8a94] font-bold">✗</span> Unsolicited messages with links</li>
+            </ul>
+          </div>
+          <div class="glass rounded-3xl p-6">
+            <h3 class="font-display text-base font-bold text-mist-100">What to Do Instead</h3>
+            <p class="mt-3 text-sm leading-relaxed text-mist-400">
+              Play responsibly using the official platform. Learn game mechanics through the <a href="/guide/how-to-play/" class="prose-link">Beginner Guide</a>, study the <a href="/games/" class="prose-link">Games Hub</a> for odds and payouts, and accept that every draw is random. There is no shortcut that beats fair odds.
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   </section>
 
-  <!-- FAQ — self-contained SEO component: visible accordion + embedded FAQPage JSON-LD -->
-  <FAQSection />
+  {/* ── Section 10: How Yarrwin Works ── */}
+  <section id="how-it-works" class="section-pad scroll-mt-28">
+    <div class="container-site">
+      <SectionHeading
+        eyebrow="Getting Started"
+        title="How Yarrwin Works"
+        description="A simple overview of the platform from account creation to placing your first game."
+      />
+      <div class="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <div class="glass rounded-3xl p-6 text-center">
+          <span class="text-3xl">①</span>
+          <h3 class="mt-3 font-display text-lg font-bold text-mist-100">Register</h3>
+          <p class="mt-2 text-sm text-mist-400">Create your account with a verified email and strong password.</p>
+        </div>
+        <div class="glass rounded-3xl p-6 text-center">
+          <span class="text-3xl">②</span>
+          <h3 class="mt-3 font-display text-lg font-bold text-mist-100">Secure</h3>
+          <p class="mt-2 text-sm text-mist-400">Enable two-factor authentication from your dashboard settings.</p>
+        </div>
+        <div class="glass rounded-3xl p-6 text-center">
+          <span class="text-3xl">③</span>
+          <h3 class="mt-3 font-display text-lg font-bold text-mist-100">Explore</h3>
+          <p class="mt-2 text-sm text-mist-400">Browse the games hub, read the rules and study the results archive.</p>
+        </div>
+        <div class="glass rounded-3xl p-6 text-center">
+          <span class="text-3xl">④</span>
+          <h3 class="mt-3 font-display text-lg font-bold text-mist-100">Play</h3>
+          <p class="mt-2 text-sm text-mist-400">Fund your wallet and start with small stakes on markets you understand.</p>
+        </div>
+      </div>
+      <p class="mt-8 text-center text-sm text-mist-500">
+        Read the full walkthrough in the <a href="/guide/how-to-play/" class="prose-link">Beginner Guide</a>.
+      </p>
+    </div>
+  </section>
 
-  <CtaBand
-    title="Ready to play where every result is public?"
-    sub="Join Yarrwin for lightning-fast draws, transparent mechanics and a results archive that never forgets. Registration takes less than a minute."
-  />
+  {/* ── Section 11: Responsible Use ── */}
+  <section id="responsible" class="section-pad bg-ink-850/40 scroll-mt-28">
+    <div class="container-site grid gap-10 lg:grid-cols-2">
+      <div>
+        <p class="eyebrow">🛡 Responsible Gaming</p>
+        <h2 class="mt-4 font-display text-3xl font-extrabold tracking-tight">Safety and Responsible Use</h2>
+        <p class="mt-5 leading-relaxed text-mist-300">
+          Yarrwin is an informational guide designed to help users understand online gaming platforms. Gaming involves financial risk and should be treated as entertainment, not a source of income. Set a budget before you play, keep stakes flat, and end sessions on schedule rather than on streaks.
+        </p>
+        <p class="mt-4 leading-relaxed text-mist-300">
+          If gaming stops feeling like fun, use the platform's built-in tools: deposit limits, session reminders, cool-off periods and self-exclusion are all available from your dashboard. You do not need to contact support to activate any of them — they take effect immediately.
+        </p>
+      </div>
+      <div class="glass rounded-3xl p-6">
+        <h3 class="font-display text-base font-bold text-mist-100">The Four Rules of Safe Play</h3>
+        <ul class="mt-4 space-y-3 text-sm leading-relaxed text-mist-300">
+          <li class="flex gap-3"><span class="text-brand-400 font-bold">✓</span> Budget a fixed amount per session — money whose loss changes nothing.</li>
+          <li class="flex gap-3"><span class="text-brand-400 font-bold">✓</span> Never chase losses; a raised stake to recover is a decision made by the last draw, not by you.</li>
+          <li class="flex gap-3"><span class="text-brand-400 font-bold">✓</span> Take scheduled breaks — the countdown timer runs fine without you.</li>
+          <li class="flex gap-3"><span class="text-brand-400 font-bold">✓</span> 18+ only, always. Gaming is for adults who have checked their local laws.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  {/* ── Section 12: FAQ ── */}
+  <section class="section-pad scroll-mt-28">
+    <div class="container-site grid gap-10 lg:grid-cols-[0.9fr_1.4fr]">
+      <SectionHeading
+        eyebrow="FAQ"
+        title="Frequently Asked Questions"
+        sub="Quick answers to common questions about Yarrwin."
+      />
+      <FaqAccordion items={homeFaqs} />
+    </div>
+  </section>
+
+  {/* ── Section 13: Latest Blog Posts ── */}
+  {latestPosts.length > 0 && (
+    <section class="section-pad bg-ink-850/40">
+      <div class="container-site">
+        <SectionHeading
+          eyebrow="Latest"
+          title="Latest Yarrwin Guides"
+          description="Strategy articles, result updates and platform news from the blog."
+        />
+        <div class="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {latestPosts.map((post) => (
+            <a
+              href={`/blog/${post.slug}/`}
+              class="glass group flex flex-col overflow-hidden rounded-2xl p-0 transition duration-200 hover:-translate-y-1"
+            >
+              <div class="h-44 w-full overflow-hidden bg-ink-800">
+                {post.featured_image ? (
+                  <img src={post.featured_image} alt={post.title} class="h-full w-full object-cover transition duration-300 group-hover:scale-105" loading="lazy" width="400" height="176" />
+                ) : (
+                  <div class="grid h-full w-full place-items-center text-4xl text-mist-600">🎯</div>
+                )}
+              </div>
+              <div class="flex flex-1 flex-col p-5">
+                <div class="mb-2 flex items-center gap-2 text-xs text-mist-400">
+                  {post.category_slug && (
+                    <span class="chip chip-green">{post.category_name}</span>
+                  )}
+                  <span>{new Date(post.published_at ?? post.created_at).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}</span>
+                </div>
+                <h3 class="text-lg font-bold text-mist-100 group-hover:text-brand-300">{post.title}</h3>
+                <p class="mt-2 line-clamp-3 text-sm text-mist-400">{post.excerpt}</p>
+              </div>
+            </a>
+          ))}
+        </div>
+        <div class="mt-10 text-center">
+          <a href="/blog/" class="btn btn-ghost">View All Articles</a>
+        </div>
+      </div>
+    </section>
+  )}
+
+  {/* ── Section 14: Footer (built-in via BaseLayout) ── */}
 </BaseLayout>

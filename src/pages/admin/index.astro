@@ -1,0 +1,121 @@
+---
+export const prerender = false;
+
+import { getEnv } from "../../lib/runtime";
+import { verifySessionToken, parseCookies } from "../../lib/auth";
+import { getPostStats, listCategories, countMedia } from "../../lib/db";
+import AdminLayout from "../../components/AdminLayout.astro";
+
+const env = getEnv(Astro);
+const cookies = parseCookies(Astro.request.headers.get("cookie"));
+const authed = await verifySessionToken(env.DB, cookies["yarrwin_session"]);
+if (!authed) return Astro.redirect("/admin/login", 302);
+
+const db = env.DB;
+const [postStats, catResult, mediaCount] = await Promise.all([
+  getPostStats(db),
+  listCategories(db),
+  countMedia(db),
+]);
+const categoryCount = catResult.total;
+---
+
+<AdminLayout title="Dashboard" active="dashboard">
+  <div class="dashboard">
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon">📝</div>
+        <div class="stat-info">
+          <span class="stat-value">{postStats.total}</span>
+          <span class="stat-label">Total Posts</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">✅</div>
+        <div class="stat-info">
+          <span class="stat-value">{postStats.published}</span>
+          <span class="stat-label">Published</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">📋</div>
+        <div class="stat-info">
+          <span class="stat-value">{postStats.draft}</span>
+          <span class="stat-label">Drafts</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">📁</div>
+        <div class="stat-info">
+          <span class="stat-value">{categoryCount}</span>
+          <span class="stat-label">Categories</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">🖼</div>
+        <div class="stat-info">
+          <span class="stat-value">{mediaCount}</span>
+          <span class="stat-label">Media Files</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="quick-actions">
+      <h3 class="section-title">Quick Actions</h3>
+      <div class="actions-grid">
+        <a href="/admin/posts/new" class="action-card">
+          <span class="action-icon">➕</span>
+          <span class="action-label">New Post</span>
+        </a>
+        <a href="/admin/posts" class="action-card">
+          <span class="action-icon">📝</span>
+          <span class="action-label">All Posts</span>
+        </a>
+        <a href="/admin/categories" class="action-card">
+          <span class="action-icon">📁</span>
+          <span class="action-label">Categories</span>
+        </a>
+        <a href="/admin/media" class="action-card">
+          <span class="action-icon">🖼</span>
+          <span class="action-label">Media Library</span>
+        </a>
+        <a href="/admin/settings" class="action-card">
+          <span class="action-icon">⚙</span>
+          <span class="action-label">Settings</span>
+        </a>
+        <a href="/" class="action-card" target="_blank" rel="noopener noreferrer">
+          <span class="action-icon">🌐</span>
+          <span class="action-label">View Site</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    .dashboard{max-width:900px}
+    .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:16px;margin-bottom:32px}
+    .stat-card{
+      background:var(--card);border:1px solid var(--border);border-radius:12px;
+      padding:20px;display:flex;align-items:center;gap:14px;
+    }
+    .stat-icon{font-size:24px;width:44px;height:44px;display:grid;place-items:center;background:rgb(0 214 143 / 0.08);border-radius:10px}
+    .stat-info{display:flex;flex-direction:column}
+    .stat-value{font-size:22px;font-weight:800;color:var(--white);font-family:"Sora",sans-serif}
+    .stat-label{font-size:12px;color:var(--text-dim);margin-top:2px}
+
+    .quick-actions{margin-top:8px}
+    .section-title{
+      font-size:15px;font-weight:700;color:var(--white);
+      font-family:"Sora",sans-serif;margin-bottom:16px;
+    }
+    .actions-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px}
+    .action-card{
+      display:flex;flex-direction:column;align-items:center;gap:8px;
+      padding:20px 16px;background:var(--card);border:1px solid var(--border);
+      border-radius:12px;transition:all .15s;text-decoration:none;
+    }
+    .action-card:hover{border-color:var(--accent);transform:translateY(-2px)}
+    .action-icon{font-size:24px}
+    .action-label{font-size:13px;font-weight:600;color:var(--text)}
+  </style>
+</AdminLayout>

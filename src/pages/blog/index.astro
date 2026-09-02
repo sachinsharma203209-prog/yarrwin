@@ -1,0 +1,97 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import SectionHeading from "../../components/SectionHeading.astro";
+import { getEnv } from "../../lib/runtime";
+import { listPosts, listCategories } from "../../lib/db";
+
+const env = getEnv(Astro);
+const page = Number(Astro.url.searchParams.get("page") ?? "1") || 1;
+const { posts, total } = await listPosts(env.DB, { onlyPublished: true, page });
+const { categories } = await listCategories(env.DB, { onlyActive: true });
+
+const perPage = 12;
+const totalPages = Math.max(1, Math.ceil(total / perPage));
+
+const breadcrumb = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: [
+    { "@type": "ListItem", position: 1, name: "Home", item: "https://yarrwin.online/" },
+    { "@type": "ListItem", position: 2, name: "Blog", item: "https://yarrwin.online/blog/" },
+  ],
+};
+const itemList = {
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  itemListElement: posts.slice(0, 10).map((p, i) => ({
+    "@type": "ListItem",
+    position: i + 1,
+    name: p.title,
+    url: `https://yarrwin.online/blog/${p.slug}/`,
+  })),
+};
+---
+
+<BaseLayout
+  title="Yarrwin Blog — Gaming & Lottery Insights"
+  description="Latest lottery results, gaming strategies and winner stories. Stay informed with Yarrwin's expert articles and guides."
+  ogImage="/og/default.png"
+  schema={[breadcrumb, itemList]}
+>
+  <section class="section-pad">
+    <div class="container-site">
+      <SectionHeading
+        eyebrow="Blog"
+        title="Expert Hosting Insights"
+        description="In-depth reviews, performance benchmarks and practical guides to help you choose the right web hosting."
+      />
+
+      {categories.length > 0 && (
+        <div class="mt-8 flex flex-wrap justify-center gap-3">
+          {categories.map((c) => (
+            <a href={`/category/${c.slug}/`} class="chip chip-green">{c.name}</a>
+          ))}
+        </div>
+      )}
+
+      {posts.length === 0 ? (
+        <p class="mt-12 text-center text-mist-500">No blog posts published yet. Check back soon.</p>
+      ) : (
+        <div class="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {posts.map((post) => (
+            <a
+              href={`/blog/${post.slug}/`}
+              class="glass group flex flex-col overflow-hidden rounded-2xl p-0 transition duration-200 hover:-translate-y-1"
+            >
+              <div class="h-44 w-full overflow-hidden bg-ink-800">
+                {post.featured_image ? (
+                  <img src={post.featured_image} alt={post.title} class="h-full w-full object-cover transition duration-300 group-hover:scale-105" loading="lazy" />
+                ) : (
+                  <div class="grid h-full w-full place-items-center text-4xl text-mist-600">📄</div>
+                )}
+              </div>
+              <div class="flex flex-1 flex-col p-5">
+                <div class="mb-2 flex items-center gap-2 text-xs text-mist-400">
+                  {post.category_slug && (
+                    <span class="chip chip-green">{post.category_name}</span>
+                  )}
+                  <span>{new Date(post.published_at ?? post.created_at).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}</span>
+                </div>
+                <h3 class="text-lg font-bold text-mist-100 group-hover:text-brand-300">{post.title}</h3>
+                <p class="mt-2 line-clamp-3 text-sm text-mist-400">{post.excerpt}</p>
+              </div>
+            </a>
+          ))}
+        </div>
+      )}
+
+      {totalPages > 1 && (
+        <nav class="mt-12 flex items-center justify-center gap-3">
+          {page > 1 && <a class="btn btn-ghost" href={`/blog/?page=${page - 1}`}>← Prev</a>}
+          <span class="text-sm text-mist-400">Page {page} of {totalPages}</span>
+          {page < totalPages && <a class="btn btn-ghost" href={`/blog/?page=${page + 1}`}>Next →</a>}
+        </nav>
+      )}
+    </div>
+  </section>
+</BaseLayout>

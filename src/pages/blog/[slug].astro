@@ -1,0 +1,87 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { getEnv } from "../../lib/runtime";
+import { getPostBySlug } from "../../lib/db";
+import { sanitizeHtml } from "../../lib/sanitize";
+
+export const prerender = false;
+
+const env = getEnv(Astro);
+const slug = Astro.params.slug ?? "";
+const post = await getPostBySlug(env.DB, slug, { publishedOnly: true });
+
+if (!post) {
+  return Astro.redirect("/404", 302);
+}
+
+const url = `https://yarrwin.online/blog/${post.slug}/`;
+const contentHtml = sanitizeHtml(post.content ?? "");
+
+const breadcrumb = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: [
+    { "@type": "ListItem", position: 1, name: "Home", item: "https://yarrwin.online/" },
+    { "@type": "ListItem", position: 2, name: "Blog", item: "https://yarrwin.online/blog/" },
+    { "@type": "ListItem", position: 3, name: post.title, item: url },
+  ],
+};
+const articleSchema = {
+  "@context": "https://schema.org",
+  "@type": "Article",
+  headline: post.title,
+  description: post.excerpt,
+  image: post.featured_image || "https://yarrwin.online/og/default.png",
+  datePublished: post.published_at ?? post.created_at,
+  dateModified: post.updated_at,
+  author: { "@type": "Organization", name: "Yarrwin" },
+  publisher: { "@type": "Organization", name: "Yarrwin" },
+  mainEntityOfPage: url,
+};
+---
+
+<BaseLayout
+  title={`${post.title} — Yarrwin Blog`}
+  description={post.excerpt || post.title}
+  ogImage={post.featured_image || "/og/default.png"}
+  ogType="article"
+  schema={[breadcrumb, articleSchema]}
+>
+  <article class="section-pad">
+    <div class="container-site max-w-3xl">
+      <div class="mb-6 flex flex-wrap items-center gap-2 text-sm">
+        <a href="/blog/" class="prose-link">← Blog</a>
+        <span class="text-mist-600">/</span>
+        {post.category_slug ? (
+          <a href={`/category/${post.category_slug}/`} class="chip chip-green">{post.category_name}</a>
+        ) : (
+          <span class="chip chip-neutral">Uncategorised</span>
+        )}
+        <span class="text-mist-400">
+          {new Date(post.published_at ?? post.created_at).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })}
+        </span>
+      </div>
+
+      <h1 class="text-3xl font-extrabold leading-tight text-mist-100 md:text-4xl">{post.title}</h1>
+
+      {post.featured_image && (
+        <img src={post.featured_image} alt={post.title} class="mt-8 w-full rounded-2xl object-cover" />
+      )}
+
+      {post.excerpt && <p class="mt-6 text-lg leading-relaxed text-mist-300">{post.excerpt}</p>}
+
+      {post.author_name && (
+        <p class="mt-4 text-sm text-mist-400">By <span class="text-mist-300">{post.author_name}</span></p>
+      )}
+
+      <div class="mt-10 font-sans text-[17px] leading-relaxed" set:html={contentHtml}></div>
+
+      <div class="mt-12 flex items-center justify-between border-t border-white/8 pt-6 text-sm text-mist-400">
+        <span>Published: {new Date(post.published_at ?? post.created_at).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })}</span>
+        {post.updated_at && post.updated_at !== post.created_at && (
+          <span>Updated: {new Date(post.updated_at).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })}</span>
+        )}
+      </div>
+    </div>
+  </article>
+</BaseLayout>

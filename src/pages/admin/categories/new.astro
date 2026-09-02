@@ -1,0 +1,199 @@
+---
+export const prerender = false;
+
+import { getEnv } from "../../../lib/runtime";
+import { verifySessionToken, parseCookies } from "../../../lib/auth";
+import AdminLayout from "../../../components/AdminLayout.astro";
+
+const env = getEnv(Astro);
+const cookies = parseCookies(Astro.request.headers.get("cookie"));
+const authed = await verifySessionToken(env.DB, cookies["yarrwin_session"]);
+if (!authed) return Astro.redirect("/admin/login", 302);
+---
+
+<AdminLayout title="Add New Category" active="categories">
+  <div class="editor-page">
+    <div class="editor-main">
+      <div class="form-heading">
+        <label for="name" class="step-label">Category name</label>
+        <input type="text" id="name" class="title-input" placeholder="Enter category name" autocomplete="off" />
+      </div>
+
+      <div class="slug-row">
+        <span class="slug-prefix">Slug:</span>
+        <input type="text" id="slug" class="slug-input" placeholder="auto-generated-from-name" />
+      </div>
+
+      <div class="field">
+        <label for="description">Description</label>
+        <textarea id="description" rows="3" placeholder="Optional category description"></textarea>
+      </div>
+
+      <div class="seo-panel">
+        <button type="button" class="seo-toggle" id="seoToggle">
+          <span>SEO Settings</span>
+          <span class="seo-arrow">▸</span>
+        </button>
+        <div class="seo-body hidden" id="seoBody">
+          <div class="field"><label>SEO Title</label><input id="seoTitle" placeholder="Custom title for search engines" /></div>
+          <div class="field"><label>Meta Description</label><textarea id="metaDesc" rows="2" placeholder="Description for search engine results"></textarea></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="editor-sidebar">
+      <div class="sidebar-card">
+        <h4 class="sidebar-card-title">Category</h4>
+        <div class="field">
+          <label>Status</label>
+          <select id="status" class="sidebar-select">
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+          </select>
+        </div>
+        <div class="btn-stack">
+          <button type="button" class="btn btn-primary" id="saveBtn">Save Category</button>
+          <a href="/admin/categories" class="btn btn-ghost">Cancel</a>
+        </div>
+        <div class="save-status" id="saveStatus"></div>
+        <div class="error-msg hidden" id="errorMsg"></div>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    .editor-page{display:grid;grid-template-columns:1fr 320px;gap:24px;align-items:start}
+    @media(max-width:900px){.editor-page{grid-template-columns:1fr}}
+
+    .editor-main{min-width:0}
+    .form-heading{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px 18px 8px;margin-bottom:12px}
+    .step-label{display:block;font-size:12px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px}
+    .title-input{
+      width:100%;padding:8px 0;border:0;background:transparent;
+      font-size:28px;font-weight:800;color:var(--white);
+      font-family:"Sora",sans-serif;letter-spacing:-.02em;outline:none;
+    }
+    .title-input::placeholder{color:rgba(255,255,255,0.2)}
+    .slug-row{display:flex;align-items:center;gap:8px;margin-bottom:20px}
+    .slug-prefix{font-size:13px;color:var(--text-dim);white-space:nowrap}
+    .slug-input{
+      flex:1;padding:8px 12px;border-radius:8px;border:1px solid var(--border);
+      background:var(--card);color:var(--text);font-size:13px;font-family:inherit;
+    }
+    .slug-input:focus{outline:none;border-color:var(--accent)}
+
+    .field{margin-bottom:14px}
+    .field label{display:block;margin-bottom:5px;font-size:12px;font-weight:600;color:var(--text-dim);text-transform:uppercase;letter-spacing:.04em}
+    .field input,.field textarea,.sidebar-select{
+      width:100%;padding:9px 12px;border-radius:8px;
+      border:1px solid var(--border);background:var(--bg);
+      color:var(--text);font-size:13px;font-family:inherit;
+    }
+    .field input:focus,.field textarea:focus,.sidebar-select:focus{outline:none;border-color:var(--accent)}
+
+    .seo-panel{
+      background:var(--card);border:1px solid var(--border);border-radius:12px;
+      overflow:hidden;margin-bottom:24px;
+    }
+    .seo-toggle{
+      width:100%;padding:14px 18px;background:transparent;border:0;
+      color:var(--white);font-size:14px;font-weight:700;font-family:inherit;
+      cursor:pointer;display:flex;justify-content:space-between;align-items:center;
+    }
+    .seo-toggle:hover{background:rgb(255 255 255/.03)}
+    .seo-arrow{transition:transform .2s;color:var(--text-dim)}
+    .seo-arrow.open{transform:rotate(90deg)}
+    .seo-body{padding:0 18px 18px}
+    .seo-body.hidden{display:none}
+
+    .editor-sidebar{position:sticky;top:84px}
+    .sidebar-card{
+      background:var(--card);border:1px solid var(--border);border-radius:12px;
+      padding:18px;margin-bottom:16px;
+    }
+    .sidebar-card-title{margin:0 0 14px;font-size:14px;font-weight:700;color:var(--white)}
+    .sidebar-select{
+      width:100%;padding:9px 12px;border-radius:8px;
+      border:1px solid var(--border);background:var(--bg);
+      color:var(--text);font-size:13px;font-family:inherit;
+    }
+    .btn-stack{display:flex;flex-direction:column;gap:8px}
+    .btn{
+      padding:10px 16px;border-radius:10px;border:0;cursor:pointer;
+      font-weight:600;font-size:14px;font-family:inherit;transition:all .15s;text-align:center;
+      text-decoration:none;display:inline-flex;align-items:center;justify-content:center;
+    }
+    .btn-primary{background:var(--accent);color:var(--bg)}
+    .btn-primary:hover{background:#2ee8a8}
+    .btn:disabled{opacity:.55;cursor:not-allowed}
+    .btn-ghost{background:rgb(255 255 255/.05);color:var(--text);border:1px solid var(--border)}
+    .btn-ghost:hover{background:rgb(255 255 255/.08)}
+    .save-status{font-size:12px;color:var(--accent);margin-top:10px;text-align:center}
+    .error-msg{font-size:13px;color:var(--danger);margin-top:10px;padding:8px 10px;background:rgb(255 77 94/.08);border-radius:8px}
+    .error-msg.hidden{display:none}
+  </style>
+
+  <script type="module">
+    const nameInput = document.getElementById("name");
+    const slugInput = document.getElementById("slug");
+    const seoToggle = document.getElementById("seoToggle");
+    const seoBody = document.getElementById("seoBody");
+    const seoArrow = document.querySelector(".seo-arrow");
+    const saveBtn = document.getElementById("saveBtn");
+    const saveStatus = document.getElementById("saveStatus");
+    const errorMsg = document.getElementById("errorMsg");
+
+    nameInput.addEventListener("input", () => {
+      if (!slugInput.dataset.manual) {
+        slugInput.value = nameInput.value
+          .toLowerCase().trim()
+          .normalize("NFKD").replace(/[\u0300-\u036f]/g, "")
+          .replace(/[^a-z0-9\s-]/g, "")
+          .replace(/\s+/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "");
+      }
+    });
+
+    slugInput.addEventListener("input", () => { slugInput.dataset.manual = "1"; });
+
+    seoToggle.addEventListener("click", () => {
+      seoBody.classList.toggle("hidden");
+      seoArrow.classList.toggle("open");
+    });
+
+    async function api(path, opts = {}) {
+      const res = await fetch(path, {
+        headers: { "Content-Type": "application/json" },
+        credentials: "include", ...opts,
+      });
+      if (res.status === 401) { window.location.href = "/admin/login"; throw new Error("unauthorized"); }
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(typeof data.error === "string" ? data.error : JSON.stringify(data.error));
+      return data;
+    }
+
+    saveBtn.addEventListener("click", async () => {
+      errorMsg.classList.add("hidden");
+      saveStatus.textContent = "Saving...";
+      saveBtn.disabled = true;
+      try {
+        const payload = {
+          name: nameInput.value.trim(),
+          slug: slugInput.value.trim(),
+          description: document.getElementById("description").value.trim(),
+          status: document.getElementById("status").value,
+          seo_title: document.getElementById("seoTitle").value.trim(),
+          meta_description: document.getElementById("metaDesc").value.trim(),
+        };
+        if (!payload.name) throw new Error("Name is required");
+        await api("/api/categories", { method: "POST", body: JSON.stringify(payload) });
+        window.location.href = "/admin/categories";
+      } catch (e) {
+        saveStatus.textContent = "";
+        errorMsg.textContent = e.message;
+        errorMsg.classList.remove("hidden");
+      } finally {
+        saveBtn.disabled = false;
+      }
+    });
+  </script>
+</AdminLayout>

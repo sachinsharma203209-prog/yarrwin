@@ -12,10 +12,35 @@
     "astro": "astro"
   },
   "dependencies": {
-    "@astrojs/sitemap": "^3.4.0",
+    "@astrojs/cloudflare": "^12.6.13",
+    "@astrojs/react": "^6.0.5",
+    "@imagekit/nodejs": "^7.11.0",
     "@tailwindcss/vite": "^4.1.11",
+    "@tiptap/extension-blockquote": "^3.30.6",
+    "@tiptap/extension-character-count": "^3.30.6",
+    "@tiptap/extension-code-block": "^3.30.6",
+    "@tiptap/extension-horizontal-rule": "^3.30.6",
+    "@tiptap/extension-image": "^3.30.6",
+    "@tiptap/extension-link": "^3.30.6",
+    "@tiptap/extension-placeholder": "^3.30.6",
+    "@tiptap/extension-strike": "^3.30.6",
+    "@tiptap/extension-table": "^3.30.6",
+    "@tiptap/extension-table-cell": "^3.30.6",
+    "@tiptap/extension-table-header": "^3.30.6",
+    "@tiptap/extension-table-row": "^3.30.6",
+    "@tiptap/extension-text-align": "^3.30.6",
+    "@tiptap/extension-underline": "^3.30.6",
+    "@tiptap/react": "^3.30.6",
+    "@tiptap/starter-kit": "^3.30.6",
+    "@types/dompurify": "^3.0.5",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.5",
     "astro": "^5.12.0",
-    "tailwindcss": "^4.1.11"
+    "dompurify": "^3.4.14",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "tailwindcss": "^4.1.11",
+    "zod": "^4.5.4"
   },
   "engines": {
     "node": ">=18.17.1"

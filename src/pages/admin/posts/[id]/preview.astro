@@ -1,0 +1,162 @@
+---
+export const prerender = false;
+
+import { getEnv } from "../../../../lib/runtime";
+import { verifySessionToken, parseCookies } from "../../../../lib/auth";
+import { getPostById } from "../../../../lib/db";
+import AdminLayout from "../../../../components/AdminLayout.astro";
+
+const env = getEnv(Astro);
+const cookies = parseCookies(Astro.request.headers.get("cookie"));
+const authed = await verifySessionToken(env.DB, cookies["yarrwin_session"]);
+if (!authed) return Astro.redirect("/admin/login", 302);
+
+const db = env.DB;
+const postId = Number(Astro.params.id);
+const post = await getPostById(db, postId);
+if (!post) return Astro.redirect("/admin/posts", 302);
+
+function fmtDate(iso: string | null) {
+  if (!iso) return "—";
+  return new Date(iso).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" });
+}
+---
+
+<AdminLayout title={`Preview: ${post.title}`} active="posts">
+  <div class="preview-toolbar">
+    <a href={`/admin/posts/${post.id}/edit`} class="btn btn-ghost">← Edit Post</a>
+    <span class:list={["badge", post.status === "published" ? "badge-published" : "badge-draft"]}>{post.status}</span>
+  </div>
+
+  <article class="preview-article">
+    {post.featured_image && (
+      <img src={post.featured_image} alt={post.featured_image_alt || post.title} class="preview-hero" />
+    )}
+
+    <div class="preview-meta">
+      {post.category_name && <span class="preview-category">{post.category_name}</span>}
+      <time datetime={post.published_at || post.created_at}>{fmtDate(post.published_at || post.created_at)}</time>
+      {post.author_name && <span>by {post.author_name}</span>}
+    </div>
+
+    <h1 class="preview-title">{post.title}</h1>
+
+    {post.excerpt && <p class="preview-excerpt">{post.excerpt}</p>}
+
+    <div class="preview-content" set:html={post.content || "<p>No content yet.</p>"} />
+  </article>
+
+  <div class="preview-seo-info">
+    <h3>SEO Metadata</h3>
+    <dl>
+      <dt>SEO Title</dt>
+      <dd>{post.seo_title || "—"}</dd>
+      <dt>Meta Description</dt>
+      <dd>{post.meta_description || "—"}</dd>
+      <dt>Canonical URL</dt>
+      <dd>{post.canonical_url || "—"}</dd>
+      <dt>Robots</dt>
+      <dd>{`index=${post.robots_index !== 0 ? "yes" : "no"}, follow=${post.robots_follow !== 0 ? "yes" : "no"}`}</dd>
+      <dt>OG Title</dt>
+      <dd>{post.og_title || "—"}</dd>
+      <dt>OG Description</dt>
+      <dd>{post.og_description || "—"}</dd>
+      <dt>OG Image</dt>
+      <dd>{post.og_image_url || "—"}</dd>
+    </dl>
+  </div>
+
+  <style>
+    .preview-toolbar{
+      display:flex;align-items:center;gap:12px;margin-bottom:24px;
+    }
+    .btn{
+      padding:10px 20px;border-radius:10px;border:0;cursor:pointer;
+      font-weight:600;font-size:14px;font-family:inherit;transition:all .15s;
+      text-decoration:none;display:inline-flex;align-items:center;
+    }
+    .btn-ghost{background:rgb(255 255 255/.05);color:var(--text);border:1px solid var(--border)}
+    .btn-ghost:hover{background:rgb(255 255 255/.08)}
+
+    .badge{
+      display:inline-block;padding:3px 10px;border-radius:999px;
+      font-size:12px;font-weight:600;text-transform:capitalize;
+    }
+    .badge-published{background:rgb(0 214 143/.12);color:var(--accent)}
+    .badge-draft{background:rgb(255 255 255/.06);color:var(--text-dim)}
+
+    .preview-article{
+      background:var(--card);border:1px solid var(--border);border-radius:14px;
+      padding:40px;max-width:800px;
+    }
+    .preview-hero{
+      width:100%;border-radius:10px;object-fit:cover;max-height:400px;
+      margin-bottom:28px;
+    }
+    .preview-meta{
+      display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+      font-size:13px;color:var(--text-dim);margin-bottom:12px;
+    }
+    .preview-category{
+      background:rgb(0 214 143/.1);color:var(--accent);
+      padding:3px 10px;border-radius:999px;font-size:12px;font-weight:600;
+    }
+    .preview-title{
+      font-size:32px;font-weight:800;color:var(--white);
+      font-family:"Sora",sans-serif;letter-spacing:-.02em;
+      margin:0 0 16px;line-height:1.2;
+    }
+    .preview-excerpt{
+      font-size:17px;color:var(--text-dim);line-height:1.6;
+      margin:0 0 28px;padding-bottom:28px;border-bottom:1px solid var(--border);
+    }
+    .preview-content{
+      font-size:16px;line-height:1.8;color:var(--text);
+    }
+    .preview-content :global(h2){
+      font-size:24px;font-weight:700;color:var(--white);margin:32px 0 12px;
+    }
+    .preview-content :global(h3){
+      font-size:20px;font-weight:700;color:var(--white);margin:28px 0 10px;
+    }
+    .preview-content :global(p){margin:0 0 16px}
+    .preview-content :global(a){color:var(--accent);text-decoration:underline}
+    .preview-content :global(img){
+      max-width:100%;border-radius:8px;margin:16px 0;
+    }
+    .preview-content :global(blockquote){
+      border-left:3px solid var(--accent);padding:12px 20px;
+      margin:16px 0;background:rgb(0 214 143/.04);border-radius:0 8px 8px 0;
+      color:var(--text-dim);font-style:italic;
+    }
+    .preview-content :global(pre){
+      background:var(--bg);border:1px solid var(--border);border-radius:8px;
+      padding:16px;overflow-x:auto;font-size:14px;margin:16px 0;
+    }
+    .preview-content :global(code){
+      background:rgb(255 255 255/.06);padding:2px 6px;border-radius:4px;font-size:14px;
+    }
+    .preview-content :global(pre code){background:transparent;padding:0}
+    .preview-content :global(ul),.preview-content :global(ol){
+      margin:12px 0;padding-left:24px;
+    }
+    .preview-content :global(li){margin-bottom:6px}
+    .preview-content :global(hr){border:0;border-top:1px solid var(--border);margin:24px 0}
+
+    .preview-seo-info{
+      background:var(--card);border:1px solid var(--border);border-radius:12px;
+      padding:20px;margin-top:24px;max-width:800px;
+    }
+    .preview-seo-info h3{
+      margin:0 0 14px;font-size:16px;font-weight:700;color:var(--white);
+    }
+    .preview-seo-info dl{display:grid;grid-template-columns:160px 1fr;gap:8px 16px;margin:0}
+    .preview-seo-info dt{
+      font-size:12px;font-weight:600;color:var(--text-dim);
+      text-transform:uppercase;letter-spacing:.04em;
+    }
+    .preview-seo-info dd{
+      font-size:13px;color:var(--text);margin:0;word-break:break-all;
+    }
+  </style>
+</AdminLayout>

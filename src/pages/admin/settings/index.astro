@@ -1,0 +1,191 @@
+---
+export const prerender = false;
+
+import { getEnv } from "../../../lib/runtime";
+import { verifySessionToken, parseCookies } from "../../../lib/auth";
+import { getSettings } from "../../../lib/db";
+import AdminLayout from "../../../components/AdminLayout.astro";
+
+const env = getEnv(Astro);
+const cookies = parseCookies(Astro.request.headers.get("cookie"));
+const authed = await verifySessionToken(env.DB, cookies["yarrwin_session"]);
+if (!authed) return Astro.redirect("/admin/login", 302);
+
+const settings = await getSettings(env.DB);
+---
+
+<AdminLayout title="Site Settings" active="settings">
+  <div class="settings-page">
+    <div class="toast hidden" id="toast"></div>
+
+    <!-- General -->
+    <section class="settings-section">
+      <h3 class="section-title">General</h3>
+      <div class="section-body">
+        <div class="field">
+          <label>Site Name</label>
+          <input type="text" id="siteName" value={settings.site_name || ""} placeholder="Yarrwin" />
+        </div>
+        <div class="field">
+          <label>Site URL</label>
+          <input type="url" id="siteUrl" value={settings.site_url || ""} placeholder="https://yarrwin.online" />
+        </div>
+        <div class="field">
+          <label>Tagline</label>
+          <input type="text" id="tagline" value={settings.tagline || ""} placeholder="Your tagline here" />
+        </div>
+      </div>
+    </section>
+
+    <!-- SEO Defaults -->
+    <section class="settings-section">
+      <h3 class="section-title">SEO Defaults</h3>
+      <div class="section-body">
+        <div class="field">
+          <label>Default SEO Title</label>
+          <input type="text" id="defaultSeoTitle" value={settings.default_seo_title || ""} placeholder="Yarrwin — Online Gaming & Lottery Results" />
+        </div>
+        <div class="field">
+          <label>Default Meta Description</label>
+          <textarea id="defaultMetaDesc" rows="2" placeholder="Default description for search engine results">{settings.default_meta_description || ""}</textarea>
+        </div>
+        <div class="field">
+          <label>Default OG Image URL</label>
+          <input type="url" id="defaultOgImage" value={settings.default_og_image || ""} placeholder="https://yarrwin.online/og/default.png" />
+        </div>
+      </div>
+    </section>
+
+    <!-- Blog -->
+    <section class="settings-section">
+      <h3 class="section-title">Blog</h3>
+      <div class="section-body">
+        <div class="field">
+          <label>Posts Per Page</label>
+          <input type="number" id="postsPerPage" value={settings.posts_per_page || "12"} min="1" max="50" />
+        </div>
+        <div class="field">
+          <label>Default Author</label>
+          <input type="text" id="defaultAuthor" value={settings.default_author || ""} placeholder="Author name" />
+        </div>
+      </div>
+    </section>
+
+    <!-- System -->
+    <section class="settings-section">
+      <h3 class="section-title">System</h3>
+      <div class="section-body">
+        <div class="field">
+          <label>Timezone</label>
+          <select id="timezone">
+            <option value="Asia/Kolkata" selected={settings.timezone === "Asia/Kolkata"}>Asia/Kolkata (IST)</option>
+            <option value="UTC" selected={settings.timezone === "UTC"}>UTC</option>
+            <option value="America/New_York" selected={settings.timezone === "America/New_York"}>America/New_York (EST)</option>
+            <option value="Europe/London" selected={settings.timezone === "Europe/London"}>Europe/London (GMT)</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <div class="save-bar">
+      <button class="btn btn-primary" id="saveBtn">Save Settings</button>
+      <div class="save-status" id="saveStatus"></div>
+    </div>
+  </div>
+
+  <style>
+    .settings-page{max-width:720px}
+    .settings-section{
+      background:var(--card);border:1px solid var(--border);border-radius:12px;
+      margin-bottom:20px;overflow:hidden;
+    }
+    .section-title{
+      margin:0;padding:16px 20px;font-size:15px;font-weight:700;color:var(--white);
+      border-bottom:1px solid var(--border);font-family:"Sora",sans-serif;
+    }
+    .section-body{padding:20px}
+
+    .field{margin-bottom:16px}
+    .field:last-child{margin-bottom:0}
+    .field label{display:block;margin-bottom:5px;font-size:12px;font-weight:600;color:var(--text-dim);text-transform:uppercase;letter-spacing:.04em}
+    .field input,.field textarea,.field select{
+      width:100%;padding:10px 14px;border-radius:8px;
+      border:1px solid var(--border);background:var(--bg);
+      color:var(--text);font-size:14px;font-family:inherit;
+    }
+    .field select{
+      appearance:none;
+      background-image:url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%238797b3' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+      background-repeat:no-repeat;background-position:right 12px center;padding-right:36px;
+    }
+    .field input:focus,.field textarea:focus,.field select:focus{outline:none;border-color:var(--accent)}
+
+    .save-bar{
+      display:flex;align-items:center;gap:16px;margin-top:8px;
+    }
+    .btn{
+      padding:10px 24px;border-radius:10px;border:0;cursor:pointer;
+      font-weight:600;font-size:14px;font-family:inherit;transition:all .15s;
+    }
+    .btn-primary{background:var(--accent);color:var(--bg)}
+    .btn-primary:hover{background:#2ee8a8}
+    .save-status{font-size:13px;color:var(--accent)}
+
+    .toast{
+      position:fixed;bottom:24px;right:24px;padding:12px 20px;border-radius:10px;
+      font-size:14px;font-weight:600;z-index:300;
+      animation:slideUp .3s ease;
+    }
+    .toast.hidden{display:none}
+    .toast-success{background:var(--accent);color:var(--bg)}
+    .toast-error{background:var(--danger);color:#fff}
+
+    @keyframes slideUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+  </style>
+
+  <script type="module">
+    const saveBtn = document.getElementById("saveBtn");
+    const saveStatus = document.getElementById("saveStatus");
+    const toast = document.getElementById("toast");
+
+    function showToast(message, type = "success") {
+      toast.textContent = message;
+      toast.className = `toast toast-${type}`;
+      setTimeout(() => { toast.classList.add("hidden"); }, 3000);
+    }
+
+    async function api(path, opts = {}) {
+      const res = await fetch(path, {
+        headers: { "Content-Type": "application/json" },
+        credentials: "include", ...opts,
+      });
+      if (res.status === 401) { window.location.href = "/admin/login"; throw new Error("unauthorized"); }
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "Request failed");
+      return data;
+    }
+
+    saveBtn.addEventListener("click", async () => {
+      saveStatus.textContent = "Saving...";
+      try {
+        const payload = {
+          site_name: document.getElementById("siteName").value.trim(),
+          site_url: document.getElementById("siteUrl").value.trim(),
+          tagline: document.getElementById("tagline").value.trim(),
+          default_seo_title: document.getElementById("defaultSeoTitle").value.trim(),
+          default_meta_description: document.getElementById("defaultMetaDesc").value.trim(),
+          default_og_image: document.getElementById("defaultOgImage").value.trim(),
+          posts_per_page: document.getElementById("postsPerPage").value.trim(),
+          default_author: document.getElementById("defaultAuthor").value.trim(),
+          timezone: document.getElementById("timezone").value,
+        };
+        await api("/api/settings", { method: "PUT", body: JSON.stringify(payload) });
+        saveStatus.textContent = "";
+        showToast("Settings saved successfully");
+      } catch (e) {
+        saveStatus.textContent = "";
+        showToast("Error: " + e.message, "error");
+      }
+    });
+  </script>
+</AdminLayout>

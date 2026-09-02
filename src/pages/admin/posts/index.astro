@@ -1,0 +1,365 @@
+---
+export const prerender = false;
+
+import { getEnv } from "../../../lib/runtime";
+import { verifySessionToken, parseCookies } from "../../../lib/auth";
+import { listPosts, listCategories } from "../../../lib/db";
+import AdminLayout from "../../../components/AdminLayout.astro";
+
+const env = getEnv(Astro);
+const cookies = parseCookies(Astro.request.headers.get("cookie"));
+const authed = await verifySessionToken(env.DB, cookies["yarrwin_session"]);
+if (!authed) return Astro.redirect("/admin/login", 302);
+
+const db = env.DB;
+const { categories } = await listCategories(db, { onlyActive: true, perPage: 100 });
+---
+
+<AdminLayout title="Posts" active="posts">
+  <div class="page-header">
+    <h2 class="page-title">Posts</h2>
+    <a href="/admin/posts/new" class="btn btn-primary">+ Add New Post</a>
+  </div>
+
+  <div class="filters-bar">
+    <div class="search-wrap">
+      <input type="text" id="searchInput" placeholder="Search posts..." class="search-input" />
+    </div>
+    <select id="statusFilter" class="filter-select">
+      <option value="">All Status</option>
+      <option value="published">Published</option>
+      <option value="draft">Draft</option>
+      <option value="scheduled">Scheduled</option>
+    </select>
+    <select id="categoryFilter" class="filter-select">
+      <option value="">All Categories</option>
+      {categories.map((c) => (
+        <option value={c.id}>{c.name}</option>
+      ))}
+    </select>
+  </div>
+
+  <div class="bulk-bar hidden" id="bulkBar">
+    <span id="selectedCount">0 selected</span>
+    <button class="btn btn-sm btn-bulk" id="bulkPublish">Bulk Publish</button>
+    <button class="btn btn-sm btn-bulk" id="bulkDraft">Bulk Draft</button>
+    <button class="btn btn-sm btn-bulk btn-danger-outline" id="bulkDelete">Bulk Delete</button>
+  </div>
+
+  <div id="postsContainer">
+    <div class="loading-state" id="loadingState">Loading posts...</div>
+  </div>
+
+  <div class="pagination" id="pagination"></div>
+
+  <style is:global>
+    .page-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+    .page-title{margin:0;font-size:22px;font-weight:800;color:var(--white);font-family:"Sora",sans-serif}
+    .btn{
+      padding:10px 20px;border-radius:10px;border:0;cursor:pointer;
+      font-weight:600;font-size:14px;font-family:inherit;transition:all .15s;
+      text-decoration:none;display:inline-flex;align-items:center;
+    }
+    .btn-primary{background:var(--accent);color:var(--bg)}
+    .btn-primary:hover{background:#2ee8a8}
+    .btn-sm{padding:7px 14px;font-size:13px;border-radius:8px}
+    .btn-bulk{background:rgb(255 255 255/.06);color:var(--text);border:1px solid var(--border)}
+    .btn-bulk:hover{background:rgb(255 255 255/.1)}
+    .btn-danger-outline{color:var(--danger);border-color:rgb(255 77 94/.25)}
+    .btn-danger-outline:hover{background:rgb(255 77 94/.08)}
+
+    .filters-bar{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+    .search-wrap{flex:1;min-width:200px}
+    .search-input{
+      width:100%;padding:10px 14px;border-radius:10px;
+      border:1px solid var(--border);background:var(--card);
+      color:var(--text);font-size:14px;font-family:inherit;
+    }
+    .search-input:focus{outline:none;border-color:var(--accent)}
+    .filter-select{
+      padding:10px 14px;border-radius:10px;border:1px solid var(--border);
+      background:var(--card);color:var(--text);font-size:14px;font-family:inherit;
+      min-width:150px;
+    }
+    .filter-select:focus{outline:none;border-color:var(--accent)}
+
+    .bulk-bar{
+      display:flex;align-items:center;gap:12px;padding:10px 16px;
+      background:var(--card);border:1px solid var(--border);border-radius:10px;
+      margin-bottom:16px;font-size:14px;color:var(--text);
+    }
+    .bulk-bar.hidden{display:none}
+    #selectedCount{font-weight:600;color:var(--white)}
+
+    .posts-table{width:100%;border-collapse:collapse}
+    .posts-table th{
+      text-align:left;font-size:12px;font-weight:600;color:var(--text-dim);
+      text-transform:uppercase;letter-spacing:.05em;padding:10px 14px;
+      border-bottom:1px solid var(--border);
+    }
+    .posts-table td{padding:12px 14px;border-bottom:1px solid var(--border);font-size:14px}
+    .post-title-cell{display:flex;align-items:center;gap:12px}
+    .post-thumb{
+      width:56px;height:42px;border-radius:6px;object-fit:cover;
+      background:rgb(255 255 255/.05);flex-shrink:0;
+    }
+    .post-title-text{font-weight:600;color:var(--white)}
+    .post-category{font-size:12px;color:var(--text-dim);margin-top:2px}
+    .td-author{color:var(--text-dim)}
+    .td-date{color:var(--text-dim);white-space:nowrap}
+    .actions-cell{display:flex;gap:6px}
+    .link-action{
+      color:var(--accent);font-size:13px;font-weight:500;
+      text-decoration:none;padding:4px 8px;border-radius:6px;transition:background .12s;
+    }
+    .link-action:hover{background:rgb(0 214 143/.08)}
+    .link-danger{color:var(--danger)}
+    .link-danger:hover{background:rgb(255 77 94/.08)}
+
+    .badge{
+      display:inline-block;padding:3px 10px;border-radius:999px;
+      font-size:12px;font-weight:600;text-transform:capitalize;
+    }
+    .badge-published{background:rgb(0 214 143/.12);color:var(--accent)}
+    .badge-draft{background:rgb(255 255 255/.06);color:var(--text-dim)}
+    .badge-scheduled{background:rgb(124 58 237/.12);color:#a78bfa}
+
+    .loading-state,.empty-state,.error-state{
+      text-align:center;padding:48px 20px;color:var(--text-dim);font-size:14px;
+      background:var(--card);border:1px solid var(--border);border-radius:12px;
+    }
+    .error-state{color:var(--danger)}
+
+    .pagination{display:flex;justify-content:center;gap:6px;margin-top:20px}
+    .page-btn{
+      padding:8px 14px;border-radius:8px;border:1px solid var(--border);
+      background:var(--card);color:var(--text);font-size:13px;font-weight:500;
+      cursor:pointer;transition:all .12s;
+    }
+    .page-btn:hover{border-color:var(--accent);color:var(--accent)}
+    .page-btn.active{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+    .page-btn:disabled{opacity:.4;cursor:not-allowed}
+    .page-info{padding:8px 14px;font-size:13px;color:var(--text-dim)}
+  </style>
+
+  <script type="module">
+    const container = document.getElementById("postsContainer");
+    const loadingState = document.getElementById("loadingState");
+    const paginationEl = document.getElementById("pagination");
+    const bulkBar = document.getElementById("bulkBar");
+    const selectedCountEl = document.getElementById("selectedCount");
+    const searchInput = document.getElementById("searchInput");
+    const statusFilter = document.getElementById("statusFilter");
+    const categoryFilter = document.getElementById("categoryFilter");
+
+    let currentPage = 1;
+    let selectedIds = new Set();
+    let debounceTimer = null;
+
+    async function api(path, opts = {}) {
+      const res = await fetch(path, {
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        ...opts,
+      });
+      if (res.status === 401) { window.location.href = "/admin/login"; throw new Error("unauthorized"); }
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "Request failed");
+      return data;
+    }
+
+    function esc(s) {
+      return String(s ?? "").replace(/[&<>"']/g, (c) => ({
+        "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+      }[c]));
+    }
+
+    function fmtDate(iso) {
+      if (!iso) return "—";
+      return new Date(iso).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
+    }
+
+    function badgeClass(status) {
+      if (status === "published") return "badge-published";
+      if (status === "scheduled") return "badge-scheduled";
+      return "badge-draft";
+    }
+
+    async function loadPosts() {
+      loadingState.style.display = "block";
+      container.innerHTML = "";
+      container.appendChild(loadingState);
+
+      const params = new URLSearchParams();
+      params.set("page", String(currentPage));
+      params.set("perPage", "12");
+      const search = searchInput.value.trim();
+      const status = statusFilter.value;
+      const catId = categoryFilter.value;
+      if (search) params.set("search", search);
+      if (status) params.set("status", status);
+      if (catId) params.set("categoryId", catId);
+
+      try {
+        const data = await api(`/api/posts?${params.toString()}`);
+        const posts = data.posts || [];
+        const total = data.total || 0;
+        const perPage = 12;
+        const totalPages = Math.ceil(total / perPage);
+
+        if (posts.length === 0) {
+          container.innerHTML = '<div class="empty-state">No posts found.</div>';
+          paginationEl.innerHTML = "";
+          return;
+        }
+
+        let html = '<table class="posts-table"><thead><tr>';
+        html += '<th style="width:40px"><input type="checkbox" id="selectAll" /></th>';
+        html += '<th>Post</th><th>Author</th><th>Status</th><th>Date</th><th>Actions</th>';
+        html += '</tr></thead><tbody>';
+
+        for (const p of posts) {
+          const checked = selectedIds.has(p.id) ? "checked" : "";
+          const thumb = p.featured_image
+            ? `<img src="${esc(p.featured_image)}" alt="" class="post-thumb" onerror="this.style.display='none'" />`
+            : '<div class="post-thumb"></div>';
+          html += `<tr data-id="${p.id}">`;
+          html += `<td><input type="checkbox" class="post-check" data-id="${p.id}" ${checked} /></td>`;
+          html += `<td><div class="post-title-cell">${thumb}<div><div class="post-title-text">${esc(p.title)}</div><div class="post-category">${esc(p.category_name || "Uncategorised")}</div></div></div></td>`;
+          html += `<td class="td-author">${esc(p.author_name || "—")}</td>`;
+          html += `<td><span class="badge ${badgeClass(p.status)}">${esc(p.status)}</span></td>`;
+          html += `<td class="td-date">${fmtDate(p.updated_at || p.created_at)}</td>`;
+          html += `<td><div class="actions-cell">`;
+          html += `<a href="/admin/posts/${p.id}/edit" class="link-action">Edit</a>`;
+          html += `<a href="/blog/${esc(p.slug)}/" class="link-action" target="_blank" rel="noopener">Preview</a>`;
+          html += `<button class="link-action" data-duplicate="${p.id}">Duplicate</button>`;
+          html += `<button class="link-action link-danger" data-delete="${p.id}">Delete</button>`;
+          html += '</div></td></tr>';
+        }
+        html += '</tbody></table>';
+        container.innerHTML = html;
+
+        renderPagination(totalPages);
+
+        document.getElementById("selectAll")?.addEventListener("change", (e) => {
+          document.querySelectorAll(".post-check").forEach((cb) => {
+            cb.checked = e.target.checked;
+            const id = Number(cb.dataset.id);
+            if (e.target.checked) selectedIds.add(id); else selectedIds.delete(id);
+          });
+          updateBulkBar();
+        });
+
+        document.querySelectorAll(".post-check").forEach((cb) => {
+          cb.addEventListener("change", () => {
+            const id = Number(cb.dataset.id);
+            if (cb.checked) selectedIds.add(id); else selectedIds.delete(id);
+            updateBulkBar();
+          });
+        });
+
+        document.querySelectorAll("[data-duplicate]").forEach((btn) => {
+          btn.addEventListener("click", async () => {
+            try {
+              const id = btn.dataset.duplicate;
+              const data = await api(`/api/posts/${id}`);
+              const post = data.post;
+              const payload = {
+                title: post.title + " (Copy)",
+                slug: "",
+                content: post.content,
+                excerpt: post.excerpt,
+                category_id: post.category_id,
+                status: "draft",
+                featured_image: post.featured_image,
+                featured_image_alt: post.featured_image_alt,
+                seo_title: post.seo_title,
+                meta_description: post.meta_description,
+                canonical_url: post.canonical_url,
+                robots_index: post.robots_index,
+                robots_follow: post.robots_follow,
+                og_title: post.og_title,
+                og_description: post.og_description,
+                og_image_url: post.og_image_url,
+              };
+              const created = await api("/api/posts", { method: "POST", body: JSON.stringify(payload) });
+              window.location.href = `/admin/posts/${created.post.id}/edit`;
+            } catch (e) { alert("Duplicate failed: " + e.message); }
+          });
+        });
+
+        document.querySelectorAll("[data-delete]").forEach((btn) => {
+          btn.addEventListener("click", async () => {
+            if (!confirm("Delete this post permanently?")) return;
+            await api(`/api/posts/${btn.dataset.delete}`, { method: "DELETE" });
+            loadPosts();
+          });
+        });
+      } catch (e) {
+        container.innerHTML = `<div class="error-state">Error loading posts: ${esc(e.message)}</div>`;
+      }
+    }
+
+    function renderPagination(totalPages) {
+      if (totalPages <= 1) { paginationEl.innerHTML = ""; return; }
+      let html = "";
+      html += `<button class="page-btn" data-page="${currentPage - 1}" ${currentPage <= 1 ? "disabled" : ""}>← Prev</button>`;
+      for (let i = 1; i <= totalPages; i++) {
+        html += `<button class="page-btn ${i === currentPage ? "active" : ""}" data-page="${i}">${i}</button>`;
+      }
+      html += `<button class="page-btn" data-page="${currentPage + 1}" ${currentPage >= totalPages ? "disabled" : ""}>Next →</button>`;
+      paginationEl.innerHTML = html;
+      paginationEl.querySelectorAll(".page-btn").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const page = Number(btn.dataset.page);
+          if (page >= 1 && page !== currentPage) { currentPage = page; loadPosts(); }
+        });
+      });
+    }
+
+    function updateBulkBar() {
+      const count = selectedIds.size;
+      if (count > 0) {
+        bulkBar.classList.remove("hidden");
+        selectedCountEl.textContent = `${count} selected`;
+      } else {
+        bulkBar.classList.add("hidden");
+      }
+    }
+
+    async function bulkUpdate(status) {
+      if (selectedIds.size === 0) return;
+      const ids = [...selectedIds];
+      await Promise.all(ids.map((id) =>
+        api(`/api/posts/${id}`, { method: "PUT", body: JSON.stringify({ status }) })
+      ));
+      selectedIds.clear();
+      updateBulkBar();
+      loadPosts();
+    }
+
+    async function bulkDeletePosts() {
+      if (selectedIds.size === 0) return;
+      if (!confirm(`Delete ${selectedIds.size} posts permanently?`)) return;
+      const ids = [...selectedIds];
+      await Promise.all(ids.map((id) =>
+        api(`/api/posts/${id}`, { method: "DELETE" })
+      ));
+      selectedIds.clear();
+      updateBulkBar();
+      loadPosts();
+    }
+
+    searchInput.addEventListener("input", () => {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => { currentPage = 1; loadPosts(); }, 300);
+    });
+    statusFilter.addEventListener("change", () => { currentPage = 1; loadPosts(); });
+    categoryFilter.addEventListener("change", () => { currentPage = 1; loadPosts(); });
+    document.getElementById("bulkPublish").addEventListener("click", () => bulkUpdate("published"));
+    document.getElementById("bulkDraft").addEventListener("click", () => bulkUpdate("draft"));
+    document.getElementById("bulkDelete").addEventListener("click", bulkDeletePosts);
+
+    loadPosts();
+  </script>
+</AdminLayout>

@@ -1,0 +1,13 @@
+name = "yarrwin"
+compatibility_date = "2026-08-01"
+compatibility_flags = ["nodejs_compat"]
+pages_build_output_dir = "./dist"
+
+# Local development uses `wrangler d1 migrations apply yarrwin --local`.
+# For production, replace database_id with your real D1 database id
+# (npx wrangler d1 create yarrwin) and run migrations against remote.
+[[d1_databases]]
+binding = "DB"
+database_name = "yarrwin"
+database_id = "14394af9-ead0-4718-b26d-c732f20c2e3c"
+migrations_dir = "./db/migrations"

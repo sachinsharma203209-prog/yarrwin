@@ -1,0 +1,329 @@
+---
+export const prerender = false;
+
+import { getEnv } from "../../../lib/runtime";
+import { verifySessionToken, parseCookies } from "../../../lib/auth";
+import { listCategories } from "../../../lib/db";
+import AdminLayout from "../../../components/AdminLayout.astro";
+
+const env = getEnv(Astro);
+const cookies = parseCookies(Astro.request.headers.get("cookie"));
+const authed = await verifySessionToken(env.DB, cookies["yarrwin_session"]);
+if (!authed) return Astro.redirect("/admin/login", 302);
+
+const db = env.DB;
+const { categories } = await listCategories(db, { onlyActive: true, perPage: 100 });
+---
+
+<AdminLayout title="Add New Post" active="posts-new">
+  <div class="editor-page">
+    <div class="editor-main">
+      <div class="form-heading">
+        <span class="step-label">Post title</span>
+        <input type="text" id="title" class="title-input" placeholder="Enter the post title" autocomplete="off" />
+      </div>
+
+      <div class="slug-row">
+        <span class="slug-prefix">Slug:</span>
+        <input type="text" id="slug" class="slug-input" placeholder="auto-generated-from-title" />
+      </div>
+
+      <div class="editor-wrapper">
+        <div class="content-heading">
+          <span class="step-label">Post body</span>
+          <span class="field-help">Write or paste the complete article below.</span>
+        </div>
+        <textarea id="content" class="body-input" rows="18" placeholder="Write your complete post body here..."></textarea>
+      </div>
+
+      <div class="seo-panel">
+        <button type="button" class="seo-toggle" id="seoToggle">
+          <span>SEO Settings</span>
+          <span class="seo-arrow">▸</span>
+        </button>
+        <div class="seo-body hidden" id="seoBody">
+          <div class="field"><label>SEO Title</label><input id="seoTitle" placeholder="Custom title for search engines" /></div>
+          <div class="field"><label>Meta Description</label><textarea id="metaDesc" rows="2" placeholder="Description for search engine results"></textarea></div>
+          <div class="field"><label>Canonical URL</label><input id="canonicalUrl" placeholder="https://yarrwin.online/blog/post-slug" /></div>
+          <div class="field-row">
+            <label class="checkbox-label"><input type="checkbox" id="robotsIndex" checked /> Index</label>
+            <label class="checkbox-label"><input type="checkbox" id="robotsFollow" checked /> Follow</label>
+          </div>
+          <div class="field"><label>OG Title</label><input id="ogTitle" placeholder="Title for social sharing" /></div>
+          <div class="field"><label>OG Description</label><textarea id="ogDesc" rows="2" placeholder="Description for social sharing"></textarea></div>
+          <div class="field"><label>OG Image URL</label><input id="ogImage" placeholder="Image URL for social sharing" /></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="editor-sidebar">
+      <div class="sidebar-card">
+        <h4 class="sidebar-card-title">Publish</h4>
+        <div class="field">
+          <label>Status</label>
+          <select id="status">
+            <option value="draft">Draft</option>
+            <option value="published">Published</option>
+          </select>
+        </div>
+        <div class="btn-stack">
+          <button type="button" class="btn btn-ghost" id="saveDraftBtn">Save Draft</button>
+          <button type="button" class="btn btn-primary" id="publishBtn">Publish</button>
+        </div>
+        <div class="save-status" id="saveStatus"></div>
+        <div class="error-msg hidden" id="errorMsg"></div>
+      </div>
+
+      <div class="sidebar-card">
+        <h4 class="sidebar-card-title">Category</h4>
+        <select id="category" class="sidebar-select">
+          <option value="">— None —</option>
+          {categories.map((c) => (
+            <option value={c.id}>{c.name}</option>
+          ))}
+        </select>
+      </div>
+
+      <div class="sidebar-card">
+        <h4 class="sidebar-card-title">Featured Image</h4>
+        <div class="featured-image-area">
+          <img id="imagePreview" class="image-preview hidden" alt="" />
+          <button type="button" class="btn btn-ghost btn-sm" id="uploadBtn">Upload Image</button>
+          <input type="text" id="featuredImage" class="image-url-input" placeholder="Or paste image URL" />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    .editor-page{display:grid;grid-template-columns:1fr 320px;gap:24px;align-items:start}
+    @media(max-width:900px){.editor-page{grid-template-columns:1fr}}
+
+    .editor-main{min-width:0}
+    .form-heading{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px 18px 8px;margin-bottom:12px}
+    .step-label{display:block;font-size:12px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px}
+    .content-heading{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin:0 2px 10px}
+    .content-heading .step-label{margin:0}
+    .field-help{font-size:12px;color:var(--text-dim);text-align:right}
+    .title-input{
+      width:100%;padding:8px 0;border:0;background:transparent;
+      font-size:28px;font-weight:800;color:var(--white);
+      font-family:"Sora",sans-serif;letter-spacing:-.02em;
+      outline:none;
+    }
+    .title-input::placeholder{color:rgba(255,255,255,0.2)}
+    .slug-row{display:flex;align-items:center;gap:8px;margin-bottom:16px}
+    .slug-prefix{font-size:13px;color:var(--text-dim);white-space:nowrap}
+    .slug-input{
+      flex:1;padding:8px 12px;border-radius:8px;border:1px solid var(--border);
+      background:var(--card);color:var(--text);font-size:13px;font-family:inherit;
+    }
+    .slug-input:focus{outline:none;border-color:var(--accent)}
+    .editor-wrapper{margin-bottom:24px}
+    .body-input{width:100%;min-height:460px;resize:vertical;padding:22px 24px;border-radius:14px;border:1px solid var(--border);background:var(--card);color:var(--text);font:15px/1.75 inherit;outline:none}
+    .body-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgb(0 214 143/.1)}
+    .body-input::placeholder{color:var(--text-dim)}
+
+    .seo-panel{
+      background:var(--card);border:1px solid var(--border);border-radius:12px;
+      overflow:hidden;margin-bottom:24px;
+    }
+    .seo-toggle{
+      width:100%;padding:14px 18px;background:transparent;border:0;
+      color:var(--white);font-size:14px;font-weight:700;font-family:inherit;
+      cursor:pointer;display:flex;justify-content:space-between;align-items:center;
+    }
+    .seo-toggle:hover{background:rgb(255 255 255/.03)}
+    .seo-arrow{transition:transform .2s;color:var(--text-dim)}
+    .seo-arrow.open{transform:rotate(90deg)}
+    .seo-body{padding:0 18px 18px}
+    .seo-body.hidden{display:none}
+    .field-row{display:flex;gap:16px;margin-bottom:14px}
+    .checkbox-label{
+      display:flex;align-items:center;gap:6px;font-size:13px;
+      color:var(--text);cursor:pointer;
+    }
+    .checkbox-label input{accent-color:var(--accent)}
+
+    .field{margin-bottom:14px}
+    .field label{display:block;margin-bottom:5px;font-size:12px;font-weight:600;color:var(--text-dim);text-transform:uppercase;letter-spacing:.04em}
+    .field input,.field textarea,.sidebar-select{
+      width:100%;padding:9px 12px;border-radius:8px;
+      border:1px solid var(--border);background:var(--bg);
+      color:var(--text);font-size:13px;font-family:inherit;
+    }
+    .field input:focus,.field textarea:focus,.sidebar-select:focus{outline:none;border-color:var(--accent)}
+
+    .editor-sidebar{position:sticky;top:84px}
+    .sidebar-card{
+      background:var(--card);border:1px solid var(--border);border-radius:12px;
+      padding:18px;margin-bottom:16px;
+    }
+    .sidebar-card-title{margin:0 0 14px;font-size:14px;font-weight:700;color:var(--white)}
+    .sidebar-select{
+      width:100%;padding:9px 12px;border-radius:8px;
+      border:1px solid var(--border);background:var(--bg);
+      color:var(--text);font-size:13px;font-family:inherit;
+    }
+    .btn-stack{display:flex;flex-direction:column;gap:8px}
+    .btn{
+      padding:10px 16px;border-radius:10px;border:0;cursor:pointer;
+      font-weight:600;font-size:14px;font-family:inherit;transition:all .15s;
+      text-align:center;
+    }
+    .btn-primary{background:var(--accent);color:var(--bg)}
+    .btn-primary:hover{background:#2ee8a8}
+    .btn:disabled{opacity:.55;cursor:not-allowed;transform:none}
+    .btn-ghost{background:rgb(255 255 255/.05);color:var(--text);border:1px solid var(--border)}
+    .btn-ghost:hover{background:rgb(255 255 255/.08)}
+    .btn-sm{padding:7px 12px;font-size:13px}
+    .save-status{font-size:12px;color:var(--accent);margin-top:10px;text-align:center}
+    .error-msg{font-size:13px;color:var(--danger);margin-top:10px;padding:8px 10px;background:rgb(255 77 94/.08);border-radius:8px}
+    .error-msg.hidden{display:none}
+
+    .featured-image-area{display:flex;flex-direction:column;gap:8px}
+    .image-preview{width:100%;border-radius:8px;object-fit:cover;max-height:160px}
+    .image-preview.hidden{display:none}
+    .image-url-input{
+      width:100%;padding:8px 12px;border-radius:8px;
+      border:1px solid var(--border);background:var(--bg);
+      color:var(--text);font-size:13px;font-family:inherit;
+    }
+  </style>
+
+  <script type="module">
+    const titleInput = document.getElementById("title");
+    const slugInput = document.getElementById("slug");
+    const statusSelect = document.getElementById("status");
+    const categorySelect = document.getElementById("category");
+    const featuredImageInput = document.getElementById("featuredImage");
+    const imagePreview = document.getElementById("imagePreview");
+    const seoToggle = document.getElementById("seoToggle");
+    const seoBody = document.getElementById("seoBody");
+    const seoArrow = document.querySelector(".seo-arrow");
+    const saveDraftBtn = document.getElementById("saveDraftBtn");
+    const publishBtn = document.getElementById("publishBtn");
+    const saveStatus = document.getElementById("saveStatus");
+    const errorMsg = document.getElementById("errorMsg");
+    const contentField = document.getElementById("content");
+
+    contentField.addEventListener("input", markUnsaved);
+    let hasUnsaved = false;
+
+    titleInput.addEventListener("input", () => {
+      if (!slugInput.dataset.manual) {
+        slugInput.value = titleInput.value
+          .toLowerCase().trim()
+          .normalize("NFKD").replace(/[\u0300-\u036f]/g, "")
+          .replace(/[^a-z0-9\s-]/g, "")
+          .replace(/\s+/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "");
+      }
+      markUnsaved();
+    });
+
+    slugInput.addEventListener("input", () => { slugInput.dataset.manual = "1"; markUnsaved(); });
+    statusSelect.addEventListener("change", markUnsaved);
+    categorySelect.addEventListener("change", markUnsaved);
+    featuredImageInput.addEventListener("input", () => {
+      const url = featuredImageInput.value.trim();
+      if (url) { imagePreview.src = url; imagePreview.classList.remove("hidden"); }
+      else { imagePreview.classList.add("hidden"); }
+      markUnsaved();
+    });
+
+    seoToggle.addEventListener("click", () => {
+      seoBody.classList.toggle("hidden");
+      seoArrow.classList.toggle("open");
+    });
+
+    document.getElementById("uploadBtn").addEventListener("click", () => {
+      const input = document.createElement("input");
+      input.type = "file"; input.accept = "image/*";
+      input.onchange = async () => {
+        const file = input.files[0]; if (!file) return;
+        saveStatus.textContent = "Uploading...";
+        try {
+          const fd = new FormData();
+          fd.append("file", file);
+          const up = await fetch("/api/media", { method: "POST", body: fd, credentials: "include" });
+          const data = await up.json();
+          if (!up.ok) throw new Error(data.error || "Upload failed");
+          featuredImageInput.value = data.media.original_url;
+          imagePreview.src = data.media.original_url; imagePreview.classList.remove("hidden");
+          markUnsaved();
+          saveStatus.textContent = "";
+        } catch (e) { saveStatus.textContent = "Upload error: " + e.message; }
+      };
+      input.click();
+    });
+
+    function markUnsaved() { hasUnsaved = true; }
+
+    window.addEventListener("beforeunload", (e) => {
+      if (hasUnsaved) { e.preventDefault(); e.returnValue = ""; }
+    });
+
+    async function api(path, opts = {}) {
+      const res = await fetch(path, {
+        headers: { "Content-Type": "application/json" },
+        credentials: "include", ...opts,
+      });
+      if (res.status === 401) { window.location.href = "/admin/login"; throw new Error("unauthorized"); }
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        const detail = typeof data.error === "string"
+          ? data.error
+          : data.error?.fieldErrors
+            ? Object.values(data.error.fieldErrors).flat().join(" ")
+            : "Request failed";
+        throw new Error(detail);
+      }
+      return data;
+    }
+
+    function getPayload(status) {
+      return {
+        title: titleInput.value.trim(),
+        slug: slugInput.value.trim(),
+        content: contentField.value.trim(),
+        category_id: categorySelect.value ? Number(categorySelect.value) : null,
+        status,
+        featured_image: featuredImageInput.value.trim(),
+        featured_image_alt: "",
+        seo_title: document.getElementById("seoTitle").value.trim(),
+        meta_description: document.getElementById("metaDesc").value.trim(),
+        canonical_url: document.getElementById("canonicalUrl").value.trim(),
+        robots_index: document.getElementById("robotsIndex").checked,
+        robots_follow: document.getElementById("robotsFollow").checked,
+        og_title: document.getElementById("ogTitle").value.trim(),
+        og_description: document.getElementById("ogDesc").value.trim(),
+        og_image_url: document.getElementById("ogImage").value.trim(),
+      };
+    }
+
+    async function save(status) {
+      errorMsg.classList.add("hidden");
+      saveStatus.textContent = "Saving...";
+      saveDraftBtn.disabled = true;
+      publishBtn.disabled = true;
+      try {
+        const payload = getPayload(status);
+        if (!payload.title) throw new Error("Title is required");
+        const data = await api("/api/posts", { method: "POST", body: JSON.stringify(payload) });
+        saveStatus.textContent = "Saved";
+        hasUnsaved = false;
+        window.location.href = `/admin/posts/${data.post.id}/edit`;
+      } catch (e) {
+        saveStatus.textContent = "";
+        errorMsg.textContent = e.message;
+        errorMsg.classList.remove("hidden");
+      } finally {
+        saveDraftBtn.disabled = false;
+        publishBtn.disabled = false;
+      }
+    }
+
+    saveDraftBtn.addEventListener("click", () => save("draft"));
+    publishBtn.addEventListener("click", () => save("published"));
+  </script>
+</AdminLayout>

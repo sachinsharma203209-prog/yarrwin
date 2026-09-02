@@ -1,0 +1,23 @@
+---
+export const prerender = false;
+
+import { getEnv } from "../../lib/runtime";
+import { verifySessionToken, parseCookies } from "../../lib/auth";
+
+const env = getEnv(Astro);
+const cookies = parseCookies(Astro.request.headers.get("cookie"));
+const authed = await verifySessionToken(env.DB, cookies["yarrwin_session"]);
+
+// Clear the session cookie by redirecting with expired cookie
+if (authed) {
+  return new Response(null, {
+    status: 302,
+    headers: {
+      Location: "/admin/login",
+      "Set-Cookie": "yarrwin_session=; Path=/; HttpOnly; Max-Age=0",
+    },
+  });
+}
+
+return Astro.redirect("/admin/login", 302);
+---
