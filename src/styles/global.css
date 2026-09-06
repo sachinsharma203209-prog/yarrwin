@@ -352,6 +352,20 @@
   .article-p {
     @apply mt-4 leading-relaxed text-mist-300;
   }
+  .article-page { @apply mx-auto w-full max-w-[1100px] px-4 pb-20 sm:px-6 lg:px-8; }
+  .article-page article { @apply mx-auto max-w-[78ch]; }
+  .article-page h1 { @apply mt-6 font-display text-3xl font-extrabold leading-tight tracking-tight text-mist-100 md:text-5xl; }
+  .article-page h2 { @apply mt-14 border-t border-white/10 pt-8 font-display text-2xl font-extrabold leading-tight tracking-tight text-mist-100 md:text-3xl; }
+  .article-page h3 { @apply mt-7 font-display text-lg font-bold leading-snug text-mist-100; }
+  .article-page p { @apply mt-4 max-w-[78ch] leading-7 text-mist-300; }
+  .article-page .lede { @apply text-lg leading-8 text-mist-200; }
+  .guide-section { @apply mt-10 rounded-2xl border border-white/8 bg-white/[0.02] p-5 md:p-8; }
+  .guide-section h2 { @apply mt-0 border-0 p-0; }
+  .guide-section h3 { @apply text-brand-200; }
+  .article-page ul { @apply mt-4 list-disc space-y-2 pl-6 leading-7 text-mist-300; }
+  .article-page .faq { @apply mt-5 rounded-xl border border-white/8 bg-ink-900/60 p-4 md:p-5; }
+  .article-page .notice { @apply mt-10 rounded-2xl border border-gold-400/20 bg-gold-400/5 p-5 leading-7 text-mist-300; }
+  @media (max-width: 767px) { #site-header .nav-shell { @apply mx-1; } .nav-link { @apply px-3; } }
   .prose-link {
     @apply font-medium text-brand-300 underline decoration-brand-500/40 underline-offset-4
       transition hover:text-brand-200 hover:decoration-brand-300;
