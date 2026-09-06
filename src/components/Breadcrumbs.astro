@@ -7,9 +7,10 @@ const { items } = Astro.props;
 
 <nav aria-label="Breadcrumb" class="container-site pt-8 text-sm text-mist-500">
   <ol class="flex flex-wrap items-center gap-2">
-    {items.filter((item, index) => !(index === 0 && item.label.toLowerCase() === "home")).map((item, index) => (
+    <li><a href="/" class="prose-link">Home</a></li>
+    {items.filter((item, index) => !(index === 0 && item.label.toLowerCase() === "home")).map((item) => (
       <li class="flex items-center gap-2">
-        {index > 0 && <span aria-hidden="true">/</span>}
+        <span aria-hidden="true">/</span>
         {item.href ? <a href={item.href} class="prose-link">{item.label}</a> : <span aria-current="page">{item.label}</span>}
       </li>
     ))}
