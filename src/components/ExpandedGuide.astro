@@ -27,7 +27,7 @@ const linksHtml = commonLinks.slice(0,8);
       <p class="lede">Because screens and account permissions can change, treat every example as a reading aid rather than a current announcement. If your account shows different wording, preserve that wording and follow the authorised instructions attached to it.</p>
       {scenarios.map((scenario, i) => <section class="guide-section">
         <h2>{titles[i % titles.length]}</h2>
-        <h3>{subs[i % subs.length]}</h3>
+        {(!p.sectionSubheads || i < p.sectionSubheads.length) && <h3>{subs[i % subs.length]}</h3>}
         <p>{scenario} {detailA[i % detailA.length]}</p>
         <p>{detailB[i % detailB.length]} The checkpoint belongs specifically to {p.keyword}, so preserve its terminology instead of substituting language from another guide.</p>
         <p>{detailC[i % detailC.length]} Re-read the same record after one reversible test; a changed screen is an observation, not proof of a guaranteed outcome.</p>

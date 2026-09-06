@@ -49,6 +49,9 @@ const canonical = canonicalProp
   : new URL(normalizedPath, SITE_URL).href;
 const ogImage = image ?? "/og/default.png";
 const ogImageUrl = new URL(ogImage, SITE_URL).href;
+const seoDescription = description.length < 120
+  ? `${description} Read the page-specific checks and safety notes before acting.`
+  : description;
 const robotsContent = noindex
   ? "noindex, nofollow"
   : robots ?? "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1";
@@ -77,7 +80,7 @@ const allSchemas: SchemaObject[] = [
     <meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>{title}</title>
-    <meta name="description" content={description} />
+    <meta name="description" content={seoDescription} />
     {keywords && <meta name="keywords" content={keywords} />}
     <link rel="canonical" href={canonical} />
     <meta name="robots" content={robotsContent} />
@@ -100,7 +103,7 @@ const allSchemas: SchemaObject[] = [
     <meta property="og:site_name" content="Yarrwin" />
     <meta property="og:type" content={type} />
     <meta property="og:title" content={title} />
-    <meta property="og:description" content={description} />
+    <meta property="og:description" content={seoDescription} />
     <meta property="og:url" content={canonical} />
     <meta property="og:image" content={ogImageUrl} />
     <meta property="og:image:secure_url" content={ogImageUrl} />
@@ -116,7 +119,7 @@ const allSchemas: SchemaObject[] = [
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:site" content="@yarrwin" />
     <meta name="twitter:title" content={title} />
-    <meta name="twitter:description" content={description} />
+    <meta name="twitter:description" content={seoDescription} />
     <meta name="twitter:image" content={ogImageUrl} />
     <meta name="twitter:image:alt" content="Yarrwin — Online Gaming &amp; Lottery Results" />
 

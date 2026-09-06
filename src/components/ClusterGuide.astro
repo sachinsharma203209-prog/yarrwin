@@ -54,4 +54,4 @@ const faqs = family === "transactions" ? [
   {q:"Is this page official support?",a:"No. Verify account instructions inside the platform and use its authorised route."}
 ];
 ---
-<ExpandedGuide {...item} scenarios={scenarios} faqs={faqs} sectionTitles={sectionTitles} />
+<ExpandedGuide {...item} scenarios={scenarios} faqs={faqs} sectionTitles={sectionTitles} sectionSubheads={Array.from({length: 5 + (kind.length % 5)}, (_,i) => `${item.label}: checkpoint ${i+1}`)} />
