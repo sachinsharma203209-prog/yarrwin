@@ -44,7 +44,9 @@ const SITE_URL = Astro.site ?? new URL("https://yarrwin.online");
 
 const normalizedPath =
   Astro.url.pathname === "/" ? "/" : Astro.url.pathname.replace(/\/+$/, "") + "/";
-const canonical = canonicalProp ?? new URL(normalizedPath, SITE_URL).href;
+const canonical = canonicalProp
+  ? new URL(canonicalProp, SITE_URL).href
+  : new URL(normalizedPath, SITE_URL).href;
 const ogImage = image ?? "/og/default.png";
 const ogImageUrl = new URL(ogImage, SITE_URL).href;
 const robotsContent = noindex
