@@ -1,0 +1,40 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Breadcrumbs from "./Breadcrumbs.astro";
+
+interface Props { path: string; title: string; description: string; heading: string; intro: string; label: string; }
+const { path, title, description, heading, intro, label } = Astro.props;
+const canonical = new URL(path, Astro.site ?? "https://yarrwin.online").href;
+const schemas = [
+  { "@context": "https://schema.org", "@type": "WebPage", "@id": `${canonical}#webpage`, name: title, description, url: canonical, isPartOf: { "@id": "https://yarrwin.online/#website" } },
+  { "@context": "https://schema.org", "@type": "BreadcrumbList", itemListElement: [{ "@type": "ListItem", position: 1, name: "Home", item: "https://yarrwin.online/" }, { "@type": "ListItem", position: 2, name: label, item: canonical }] },
+  { "@context": "https://schema.org", "@type": "FAQPage", mainEntity: ["What is this page about?","Can I trust every promotion I see?","Should I share my OTP?","Where can I check current rules?","What if a page will not load?","How do I report a suspicious message?","Is gaming suitable for everyone?","How can I stay responsible?"].map((q) => ({ "@type": "Question", name: q, acceptedAnswer: { "@type": "Answer", text: "Check the current platform information, protect your private details and use the relevant Yarrwin guide before acting." } })) },
+];
+const expandedSections = ["Definition and purpose", "Checks before acting", "Step-by-step approach", "Account information", "Troubleshooting", "Privacy and security", "Support and records", "Safety checklist"];
+const expandedFaqs = [
+  ["What is this page about?", "It explains a Yarrwin-related question in plain language and points you toward checks that can be verified."],
+  ["Can I trust every promotion I see?", "No. Verify promotions, codes and conditions inside the relevant platform account before using them."],
+  ["Should I share my OTP?", "No. Keep one-time codes, passwords and recovery details private."],
+  ["Where can I check current rules?", "Read the platform’s current terms and account screens, then compare them with the relevant Yarrwin guide."],
+  ["What if a page will not load?", "Check your connection and address, try again later, and use a verified support route if the problem continues."],
+  ["How do I report a suspicious message?", "Save a redacted record, avoid the link and report it through the platform or service that owns the account."],
+  ["Is gaming suitable for everyone?", "Gaming is for adults aged 18+ where permitted. Financial risk means it is not suitable for every person."],
+  ["How can I stay responsible?", "Set time and spending limits, never borrow or chase losses, and take a break when play stops feeling controlled."],
+];
+---
+
+<BaseLayout title={title} description={description} canonical={canonical} schema={schemas}>
+  <Breadcrumbs items={[{ label }]} />
+  <main class="container-site section-pad">
+    <article class="mx-auto max-w-3xl">
+      <p class="eyebrow">{label}</p>
+      <h1 class="mt-4 font-display text-4xl font-extrabold tracking-tight md:text-5xl">{heading}</h1>
+      <p class="mt-6 text-lg leading-relaxed text-mist-300">{intro}</p>
+      <div class="mt-10 space-y-8 text-mist-300 [&_h2]:font-display [&_h2]:text-2xl [&_h2]:font-bold [&_h2]:text-mist-100 [&_h3]:mt-6 [&_h3]:font-display [&_h3]:text-lg [&_h3]:font-semibold [&_h3]:text-mist-100 [&_p]:mt-3 [&_p]:leading-relaxed [&_a]:prose-link [&_ul]:mt-3 [&_ul]:list-disc [&_ul]:space-y-2 [&_ul]:pl-6"><slot />
+        {expandedSections.map((section, index) => <section><h2>{section} for {label}</h2><h3>What to look for</h3><p>{label} needs a careful reading of the address, instructions and conditions shown by the relevant platform. Start with the exact task you want to complete, then separate a visible fact from a promise made by an advert, message or unknown account. This guide gives context, but the current platform screen remains the source to check before you submit information or money.</p><p>Use a measured process. Open a verified address, read the page without rushing, and provide only the details needed for the task. Keep passwords, one-time codes, recovery phrases and complete payment information private. If the page asks for something unrelated, creates urgency or refuses to explain a condition, stop and verify through a trusted route.</p><p>For Indian users, wording and availability may differ by device, account or region. Do not assume that a feature, payment method, promotion or security control exists for everyone. Save a non-sensitive reference such as a date or case number, and revisit the current terms whenever the platform changes its process.</p><p>A useful check is specific rather than dramatic. Compare the spelling of the domain, look for clear terms and privacy information, and note whether a request makes sense for the feature you opened. A clean interface can still lead to an unsafe destination, while a plain page can still be legitimate; evidence is more useful than appearance.</p><p>When something goes wrong, write down what happened in your own words. Include the time, device and visible error, but remove account identifiers before sharing it. This record helps you explain the problem to verified support and prevents repeated guesses that might lock an account or create a duplicate request.</p>{index === 2 && <ol><li>Confirm the destination and purpose.</li><li>Read eligibility and security instructions.</li><li>Complete the smallest necessary action.</li><li>Record the result without exposing private data.</li><li>Contact verified support when the result is unclear.</li></ol>}</section>)}
+        <section><h2>Frequently asked questions</h2>{expandedFaqs.map(([q, a]) => <div><h3>{q}</h3><p>{a}</p></div>)}</section>
+      </div>
+      <div class="mt-12 border-t border-white/10 pt-8"><p class="text-sm text-mist-400">Continue with the <a href="/" class="prose-link">Yarrwin homepage</a>, <a href="/games/" class="prose-link">Games Hub</a>, or <a href="/guide/how-to-play/" class="prose-link">Beginner Guide</a>.</p></div>
+    </article>
+  </main>
+</BaseLayout>

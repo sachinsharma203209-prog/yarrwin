@@ -1,0 +1,41 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Breadcrumbs from "./Breadcrumbs.astro";
+
+interface Faq { q:string; a:string }
+interface Props { path:string; label:string; heading:string; title:string; description:string; keyword:string; topic:string; scenarios:string[]; faqs:Faq[]; sectionTitles?:string[]; sectionSubheads?:string[]; links?:{href:string;label:string}[] }
+const p = Astro.props as Props;
+const titles = p.sectionTitles ?? ["Start with the screen in front of you","Name the record or request","Separate rules from assumptions","Check the smallest useful detail","Keep an evidence trail","Compare with a second source","Decide whether to pause","Protect account information","Choose the next action","Close the loop"];
+const subs = p.sectionSubheads ?? ["What the page actually says","Identifiers that prevent confusion","Reading a rule without guessing","A focused inspection","Notes that remain useful","Cross-checking responsibly","When waiting is sensible","Details never to disclose","A practical decision tree","What to record afterwards"];
+const fallback = Array.from({length:10},(_,i)=>`${p.topic} is best understood by examining the exact label, status or field visible at step ${i+1}.`);
+const scenarios = p.scenarios?.length ? p.scenarios : fallback;
+const commonLinks = p.links ?? [{href:"/games/",label:"Games hub"},{href:"/results/",label:"Results guide"},{href:"/transactions/",label:"Transactions"},{href:"/troubleshooting/",label:"Troubleshooting"},{href:"/responsible-gaming/",label:"Responsible gaming"},{href:"/support/",label:"Support"}];
+const detailA = ["Write down the wording before refreshing; a changing message can hide the original cause.","Use one identifier at a time so two requests are not accidentally treated as the same event.","A rule only answers the question it covers; anything else belongs in the unknown column.","Inspect the date, timezone, device and account state together rather than relying on a cropped image.","A short timeline is more useful than a long story: action, screen message, reference, then result.","Cross-checking means opening the relevant page yourself, not forwarding a screenshot from a group.","Pausing protects you from duplicate taps, repeated codes and decisions made under pressure.","Passwords, one-time codes and recovery phrases stay private even when a message sounds urgent.","Pick the route that matches the status; a different problem page can send you in the wrong direction.","Finish by marking what is confirmed, what is pending and what still needs an authorised answer."];
+const detailB = ["If the wording is vague, capture the surrounding heading and button text as well.","Period, order or ticket labels should be copied exactly, including leading zeroes.","Never fill a missing field with a value inferred from an earlier round or another account.","Browser cache, network changes and a second device are tests, not proof that a platform acted.","Keep receipts and timestamps in a private folder; remove phone numbers before sharing anything.","A second source can confirm formatting, but it cannot turn an uncertain outcome into a guarantee.","Set a personal time and spending boundary before continuing with a game or payment screen.","Support staff should not need your PIN, OTP, remote-control access or a screen-share session.","Use the route that describes the failure you can reproduce, then stop if the message changes.","An unresolved item deserves a clear follow-up date rather than repeated retries every few minutes."];
+const detailC = ["The goal is clarity, not a prediction: describe what happened and what did not happen.","Records become reliable only when their source, time and identifier are all visible.","Neutral language helps: say unavailable, pending or rejected instead of inventing a reason.","Small technical checks are reversible; avoid deleting data or installing an unknown file while testing.","Evidence should help an authorised review without exposing another person’s personal information.","If two pages disagree, preserve both links and ask the platform through a route you opened yourself.","Walking away is a valid result when the information remains unclear or the financial risk feels uncomfortable.","Use a fresh password only through a verified account screen and sign out of shared devices.","Escalate only the narrow issue; unrelated claims and promotional promises make a review harder.","Once resolved, remove duplicate requests and keep a brief note of the confirmed outcome."];
+const detailD = ["This approach applies whether the page is a game, result row, payment record or account notice.","A label describes a state; it does not promise how quickly the next state will appear.","Examples on this page are explanatory and should never be copied as live platform data.","Do not treat a successful browser test as evidence that a transaction or result is valid.","If you must share evidence, redact identity numbers, balances, QR codes and contact details first.","Look for consistency across the page and your own account, not for certainty in a stranger’s claim.","Responsible use includes stopping when the activity stops being understandable or affordable.","The safest response to pressure is to close the chat and return through a known domain.","A support reply can explain process, but only the account can show its actual status.","Review your note later with fresh eyes; unresolved assumptions are easier to spot then."];
+const linksHtml = commonLinks.slice(0,8);
+---
+<BaseLayout title={p.title} description={p.description} canonical={p.path}>
+  <main class="container article-page">
+    <Breadcrumbs items={[{label:"Home",href:"/"},{label:p.label,href:p.path}]} />
+    <article>
+      <p class="eyebrow">Independent guide · {p.keyword}</p>
+      <h1>{p.heading}</h1>
+      <p class="lede">{p.description} This page explains how to read the situation without turning an incomplete record into a promise.</p>
+      <p class="lede">Use the headings as a decision path. The first sections define the visible record, the middle sections test uncertainty, and the closing sections help you choose a safe next step. Nothing here changes the platform’s own rules.</p>
+      <p class="lede">Because screens and account permissions can change, treat every example as a reading aid rather than a current announcement. If your account shows different wording, preserve that wording and follow the authorised instructions attached to it.</p>
+      {scenarios.map((scenario, i) => <section class="guide-section">
+        <h2>{titles[i % titles.length]}</h2>
+        <h3>{subs[i % subs.length]}</h3>
+        <p>{scenario} {detailA[i % detailA.length]}</p>
+        <p>{scenario} {detailB[i % detailB.length]} The checkpoint belongs specifically to {p.keyword}, so preserve its terminology instead of substituting language from another guide.</p>
+        <p>{scenario} {detailC[i % detailC.length]} Re-read the same record after one reversible test; a changed screen is an observation, not proof of a guaranteed outcome.</p>
+        <p>{scenario} {detailD[i % detailD.length]} If the account uses different wording, quote that wording in your private note and follow the current authorised instructions.</p>
+      </section>)}
+      <section><h2>Questions readers usually ask</h2>{p.faqs.map(f => <div class="faq"><h3>{f.q}</h3><p>{f.a}</p></div>)}</section>
+      <section><h2>Continue with a relevant guide</h2><p>Choose only the next page that matches your situation:</p><ul>{linksHtml.map(l => <li><a href={l.href}>{l.label}</a></li>)}</ul></section>
+      <aside class="notice"><strong>Scope note:</strong> This is general information. Verify availability, rules and account status inside the platform before taking action, and do not share confidential credentials.</aside>
+    </article>
+  </main>
+</BaseLayout>

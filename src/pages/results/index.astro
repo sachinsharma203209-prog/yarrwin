@@ -1,5 +1,6 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import Phase2Appendix from "../../components/Phase2Appendix.astro";
 import SectionHeading from "../../components/SectionHeading.astro";
 import ResultsTable from "../../components/ResultsTable.astro";
 import LiveBoard from "../../components/LiveBoard.astro";
@@ -66,8 +67,8 @@ const faqSchema = {
 ---
 
 <BaseLayout
-  title="Yarrwin Results — Live & Historical WinGo, K3, 5D Draws"
-  description="Live and archived results for every Yarrwin game: WinGo colour prediction periods, K3 dice sums and 5D digit matrices with colours, sizes and UTC timestamps."
+  title="Yarrwin Results Guide: WinGo, K3 and 5D Results"
+  description="Learn how to read Yarrwin WinGo, K3 and 5D result records, period identifiers, timestamps and the limits of historical data."
   ogImage="/og/results.png"
   keywords="Wingo results, Yarrwin results archive, K3 lottery results, 5D lottery results, colour prediction history"
   schema={[breadcrumb, latestSchema, faqSchema]}
@@ -202,9 +203,10 @@ const faqSchema = {
   </section>
 
   <CtaBand
-    title="Watch the next draw close in real time"
+    title="Review result records carefully"
     sub="Pick your game, follow the countdown, and see results land within seconds on the live board."
   />
+  <Phase2Appendix topic="Yarrwin results" links={[{href:"/results/wingo/",label:"WinGo results"},{href:"/results/k3/",label:"K3 results"},{href:"/results/5d/",label:"5D results"},{href:"/games/",label:"Games Hub"},{href:"/guide/how-to-play/",label:"beginner guide"},{href:"/responsible-gaming/",label:"responsible gaming"}]} />
 </BaseLayout>
 
 <script>

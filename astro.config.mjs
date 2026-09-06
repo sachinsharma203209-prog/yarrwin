@@ -10,7 +10,7 @@ export default defineConfig({
     platformProxy: { enabled: true },
   }),
   site: "https://yarrwin.online",
-  trailingSlash: "ignore",
+  trailingSlash: "always",
   integrations: [react()],
   vite: {
     plugins: [tailwindcss()],

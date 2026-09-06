@@ -1,5 +1,6 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import Phase2Appendix from "../../components/Phase2Appendix.astro";
 import SectionHeading from "../../components/SectionHeading.astro";
 import Icon from "../../components/Icon.astro";
 
@@ -82,8 +83,8 @@ const anchorPills = [
 ---
 
 <BaseLayout
-  title="Yarrwin Games Hub — WinGo, K3 Lottery, 5D & Aviator Rules"
-  description="Complete rules, odds and strategy guides for every Yarrwin game: WinGo colour prediction, the K3 dice lottery, 5D lottery and provably fair Aviator rounds."
+  title="Yarrwin Games Guide: Rules, Results and Safer Play"
+  description="Explore Yarrwin game categories, read general rules, understand results and learn safer habits for WinGo, K3, 5D and Aviator."
   ogImage="/og/games.png"
   keywords="Yarrwin official game, Wingo game rules, K3 lottery guide, 5D lottery how to play, colour prediction strategy"
   schema={[breadcrumb, gamesSchema]}
@@ -439,4 +440,5 @@ const anchorPills = [
       <a href="/guide/how-to-play/" class="btn btn-ghost">Open the beginner guide</a>
     </div>
   </section>
+  <Phase2Appendix topic="Yarrwin games" links={[{href:"/games/wingo/",label:"WinGo guide"},{href:"/games/k3/",label:"K3 guide"},{href:"/games/5d/",label:"5D guide"},{href:"/games/aviator/",label:"Aviator guide"},{href:"/results/",label:"results hub"},{href:"/guide/how-to-play/",label:"beginner guide"},{href:"/responsible-gaming/",label:"responsible gaming"},{href:"/real-or-fake/",label:"safety checklist"}]} />
 </BaseLayout>

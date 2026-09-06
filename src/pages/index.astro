@@ -18,7 +18,7 @@ const homeFaqs = [
   },
   {
     q: "How do I log in to Yarrwin?",
-    a: "Open the official Yarrwin website in your browser, tap the Login button and enter your registered email or mobile number along with your password. If two-factor authentication is enabled you will also need to approve the second-factor prompt.",
+    a: "Open the verified platform address, tap Login, and enter your registered email or mobile number with your password. If two-step verification is supported, follow the second-factor prompt.",
   },
   {
     q: "Is Yarrwin free to use?",
@@ -26,7 +26,7 @@ const homeFaqs = [
   },
   {
     q: "What games are available on Yarrwin?",
-    a: "Yarrwin covers several game categories including WinGo colour prediction, the K3 three-dice lottery, the five-digit 5D lottery and provably-fair Aviator rounds. Each game has its own rules page and strategy guide.",
+    a: "This guide covers game categories including WinGo colour prediction, the K3 three-dice lottery, the five-digit 5D lottery and Aviator rounds. Each game has its own rules page and guide.",
   },
   {
     q: "Are Yarrwin hack claims real?",
@@ -34,11 +34,11 @@ const homeFaqs = [
   },
   {
     q: "How do I verify a Yarrwin gift code?",
-    a: "Gift codes should only be redeemed through the official Yarrwin platform. If someone contacts you claiming to offer a special code, verify the source through your official account dashboard before entering it anywhere.",
+    a: "Redeem gift codes only inside the verified platform account. If someone sends a special code, check its source through your account dashboard before entering it anywhere.",
   },
   {
     q: "What is Yarrwin Club?",
-    a: "Yarrwin Club is a community feature within the platform where users can access exclusive updates and group activities. Information about club features is available through your official account settings.",
+    a: "Yarrwin Club is described as a community feature where users can find updates and group activities. Check the account dashboard for the features available to you.",
   },
 ];
 
@@ -56,12 +56,12 @@ const gameCards = [
   { name: "WinGo", desc: "60-second colour prediction with Green, Red and Violet markets", href: "/games/#wingo", icon: "🎯" },
   { name: "K3 Lottery", desc: "Three-dice lottery with Big/Small, Odd/Even and triple bets", href: "/games/#k3", icon: "🎲" },
   { name: "5D Lottery", desc: "Five-digit draw with sum markets and per-digit bets", href: "/games/#5d", icon: "🔢" },
-  { name: "Aviator", desc: "Provably-fair crash game with auto cash-out controls", href: "/games/#aviator", icon: "✈" },
+  { name: "Aviator", desc: "Crash-style game information and general cash-out guidance", href: "/games/#aviator", icon: "✈" },
 ];
 ---
 
 <BaseLayout
-  title="Yarrwin Game, Login Help and Platform Guide — Online Gaming & Lottery"
+  title="Yarrwin Game: Login, Register & App Download Guide"
   description="Yarrwin is an online gaming and lottery results platform. Check draw results, read game guides for WinGo, K3, 5D and Aviator, and learn how to log in safely."
   keywords="yarrwin, yarrwin login, yarrwin game, yarrwin game login, yarrwin lottery, yarrwin club, yarrwin gift code"
   schema={[faqSchema]}
@@ -80,7 +80,7 @@ const gameCards = [
           Yarrwin <span class="text-gradient-brand">Game, Login Help &amp; Platform Guide</span>
         </h1>
         <p class="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-mist-400">
-          Your independent guide to the Yarrwin gaming platform. Check draw results for WinGo, K3 and 5D lotteries, learn safe login practices, and read strategy articles — all in one place.
+          An independent guide to Yarrwin. Check WinGo, K3 and 5D results, learn safer login habits, and read practical game guides in one place.
         </p>
         <div class="mt-8 flex flex-wrap justify-center gap-3">
           <a href="/games/" class="btn btn-primary">Explore Games</a>
@@ -155,21 +155,21 @@ const gameCards = [
         <p class="eyebrow">🔐 Safe Access</p>
         <h2 class="mt-4 font-display text-3xl font-extrabold tracking-tight">How to Access Yarrwin Login Safely</h2>
         <p class="mt-5 leading-relaxed text-mist-300">
-          Accessing your Yarrwin game login safely starts with verifying the URL in your browser. Always type the address directly or use a bookmarked link rather than following unsolicited messages or ads. Check for the padlock icon and confirm the domain matches the official Yarrwin website before entering any credentials.
+          Start by checking the URL in your browser. Type it yourself or use a bookmark instead of following an unsolicited message or ad. Look for the padlock, read the domain carefully, and only enter credentials after the address matches the platform you intended to visit.
         </p>
         <p class="mt-4 leading-relaxed text-mist-300">
-          Once on the login page, enter your registered email or mobile number and your password. If two-factor authentication is enabled, approve the prompt through your authenticator app. Enable 2FA from your account dashboard as soon as possible — it adds a critical layer of protection to your Yarrwin login.
+          On the login page, enter your registered email or mobile number and password. If two-step verification is supported, approve the prompt in your authenticator app. Turn it on in your dashboard when available; it gives a stolen password less power.
         </p>
         <p class="mt-4 leading-relaxed text-mist-300">
-          Common login issues include entering the wrong password, not receiving the 2FA code, or accessing an outdated bookmark. If you are locked out, use the password reset flow and check your email for the recovery link. Clear your browser cache if the page does not load correctly.
+          A wrong password, an unsynced authenticator, or an old bookmark can all block access. Use the password-reset flow if needed, check your recovery email, and clear the browser cache when the page itself refuses to load.
         </p>
       </div>
       <div class="flex flex-col gap-4">
         <div class="glass rounded-3xl p-6">
           <h3 class="font-display text-base font-bold text-mist-100">Login Safety Checklist</h3>
           <ul class="mt-4 space-y-3 text-sm leading-relaxed text-mist-300">
-            <li class="flex gap-3">✓ Always use the official Yarrwin URL directly</li>
-            <li class="flex gap-3">✓ Enable two-factor authentication</li>
+            <li class="flex gap-3">✓ Use the verified platform URL directly</li>
+            <li class="flex gap-3">✓ Enable two-step verification if supported</li>
             <li class="flex gap-3">✓ Never share your password or OTP codes</li>
             <li class="flex gap-3">✓ Log out after each session on shared devices</li>
             <li class="flex gap-3">✓ Report suspicious login alerts immediately</li>
@@ -197,7 +197,7 @@ const gameCards = [
         <div>
           <h3 class="font-display text-xl font-bold text-mist-100">What the results archive shows</h3>
           <p class="mt-4 leading-relaxed text-mist-300">
-            Yarrwin publishes the outcome of every draw period to a permanent, uneditable archive. WinGo periods settle every 60 seconds with a winning digit, its colour and its size. K3 draws three dice every three minutes and shows the sum, parity and size. 5D draws five digits every five minutes with the full A-E matrix and sum total.
+            The results archive records each draw period and its outcome. WinGo entries show a digit, colour and size; K3 entries show three dice, their sum, parity and size; 5D entries show five digits and the total. Check the relevant game page for the current rules and timing.
           </p>
           <p class="mt-4 leading-relaxed text-mist-300">
             The archive is designed for transparency. You can verify any period from its archive row alone without relying on third-party sources. This makes it easy to cross-check results and understand the distribution of outcomes across any time range.
@@ -211,7 +211,7 @@ const gameCards = [
           <div class="glass rounded-3xl p-6">
             <h4 class="font-display text-lg font-bold text-mist-100">How results are published</h4>
             <p class="mt-2 text-sm leading-relaxed text-mist-400">
-              Results are written to the archive within seconds of each period closing. Each row includes the period number, winning outcome, colour, size and UTC timestamp. The archive is append-only — rows are never edited after publication.
+              Each row identifies the period, outcome, relevant colour or size, and a UTC timestamp. Use those fields to compare a result with the game rules and keep your own record when that helps.
             </p>
           </div>
         </div>
@@ -226,10 +226,10 @@ const gameCards = [
         <p class="eyebrow">👥 Community</p>
         <h2 class="mt-4 font-display text-3xl font-extrabold tracking-tight">What Is Yarrwin Club?</h2>
         <p class="mt-5 leading-relaxed text-mist-300">
-          Yarrwin Club is a community feature within the platform designed to connect users with group activities and exclusive updates. Club members can access special announcements, participate in community events and stay informed about new game launches and feature updates.
+          Yarrwin Club is described as a community feature that may connect users with group activities and updates. Availability and features can vary by account.
         </p>
         <p class="mt-4 leading-relaxed text-mist-300">
-          Information about Yarrwin Club features, membership tiers and available benefits is managed through your official account settings. If you have an active Yarrwin account, check the Club section in your dashboard for the latest details on what is currently available.
+          Information about Club features, membership tiers and benefits is managed through the account settings. If you have an account, check the Club section for the options currently shown to you.
         </p>
       </div>
       <div class="glass rounded-3xl p-8">
@@ -252,16 +252,16 @@ const gameCards = [
         <p class="eyebrow">🎁 Gift Codes</p>
         <h2 class="mt-4 font-display text-3xl font-extrabold tracking-tight">How to Verify a Yarrwin Gift Code</h2>
         <p class="mt-5 leading-relaxed text-mist-300">
-          Yarrwin gift codes are promotional codes that may be distributed through official channels. If you receive a gift code, always verify that the source is genuinely from Yarrwin before entering it into any field. Legitimate codes are delivered through your official account, official notifications or verified partner channels.
+          Gift codes are promotional codes that may be shared through platform-controlled channels. If you receive one, verify its source before entering it anywhere. Look for a message inside your account or another channel you already trust.
         </p>
         <p class="mt-4 leading-relaxed text-mist-300">
-          Be cautious of codes shared through social media comments, unsolicited messages or unofficial websites. These may be phishing attempts designed to capture your login credentials. A genuine Yarrwin gift code will be redeemable directly from your account dashboard — you should never need to visit a third-party site or provide your password to claim a code.
+          Treat codes posted in comments, unsolicited messages or unknown websites as suspicious. A legitimate redemption flow should not ask for your password on a third-party page. If a code cannot be checked inside your account, leave it unused.
         </p>
       </div>
       <div class="glass rounded-3xl p-6">
         <h3 class="font-display text-base font-bold text-mist-100">Gift Code Safety Tips</h3>
         <ul class="mt-4 space-y-3 text-sm leading-relaxed text-mist-300">
-          <li class="flex gap-3"><span class="text-brand-300 font-bold">•</span> Only redeem codes through your official Yarrwin account</li>
+          <li class="flex gap-3"><span class="text-brand-300 font-bold">•</span> Redeem codes only through your account</li>
           <li class="flex gap-3"><span class="text-brand-300 font-bold">•</span> Never enter gift codes on third-party websites</li>
           <li class="flex gap-3"><span class="text-brand-300 font-bold">•</span> Ignore unsolicited DMs offering "exclusive" codes</li>
           <li class="flex gap-3"><span class="text-brand-300 font-bold">•</span> Check the code source before clicking any redemption link</li>
@@ -285,10 +285,10 @@ const gameCards = [
             No, Yarrwin hack claims are not real. Every website, video or message that promises guaranteed wins, "predictor" tools, modified APKs or secret cheat codes is a scam. These operations exist solely to steal your account credentials, install malware on your device or harvest your personal information.
           </p>
           <p class="mt-4 leading-relaxed text-mist-300">
-            The Yarrwin platform uses provably fair mechanics, which means each draw outcome is determined by cryptographic commitments that cannot be altered after the fact. No external tool, script or "hack" can predict or manipulate the result of a draw that has already been committed. Anyone claiming otherwise is misleading you.
+            A third-party tool cannot guarantee or control a random draw. Claims about predictors, generators or scripts that promise a winning result are misleading and may expose your device or account to harm.
           </p>
           <p class="mt-4 leading-relaxed text-mist-300">
-            Never install modified APKs from unofficial sources, never share your OTP or password with anyone, and never enter your Yarrwin login credentials on any site other than the official domain. If something claims to be a "Yarrwin hack" — it is a trap.
+            Do not install modified APKs from unknown sources or share an OTP or password. Enter login details only after checking the destination domain. A “Yarrwin hack” download is a warning sign, not a shortcut.
           </p>
         </div>
         <div class="flex flex-col gap-4">
@@ -305,7 +305,7 @@ const gameCards = [
           <div class="glass rounded-3xl p-6">
             <h3 class="font-display text-base font-bold text-mist-100">What to Do Instead</h3>
             <p class="mt-3 text-sm leading-relaxed text-mist-400">
-              Play responsibly using the official platform. Learn game mechanics through the <a href="/guide/how-to-play/" class="prose-link">Beginner Guide</a>, study the <a href="/games/" class="prose-link">Games Hub</a> for odds and payouts, and accept that every draw is random. There is no shortcut that beats fair odds.
+              Learn the mechanics in the <a href="/guide/how-to-play/" class="prose-link">Beginner Guide</a>, review the <a href="/games/" class="prose-link">Games Hub</a>, and remember that each draw is uncertain. No external tool changes fair odds.
             </p>
           </div>
         </div>
@@ -319,7 +319,7 @@ const gameCards = [
       <SectionHeading
         eyebrow="Getting Started"
         title="How Yarrwin Works"
-        description="A simple overview of the platform from account creation to placing your first game."
+        description="A short overview of the platform, from account creation to learning the games."
       />
       <div class="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
         <div class="glass rounded-3xl p-6 text-center">
@@ -330,7 +330,7 @@ const gameCards = [
         <div class="glass rounded-3xl p-6 text-center">
           <span class="text-3xl">②</span>
           <h3 class="mt-3 font-display text-lg font-bold text-mist-100">Secure</h3>
-          <p class="mt-2 text-sm text-mist-400">Enable two-factor authentication from your dashboard settings.</p>
+          <p class="mt-2 text-sm text-mist-400">Enable two-step verification from your dashboard if the platform supports it.</p>
         </div>
         <div class="glass rounded-3xl p-6 text-center">
           <span class="text-3xl">③</span>
@@ -344,7 +344,7 @@ const gameCards = [
         </div>
       </div>
       <p class="mt-8 text-center text-sm text-mist-500">
-        Read the full walkthrough in the <a href="/guide/how-to-play/" class="prose-link">Beginner Guide</a>.
+        Read the step-by-step explanation in the <a href="/guide/how-to-play/" class="prose-link">Beginner Guide</a>.
       </p>
     </div>
   </section>
@@ -359,7 +359,7 @@ const gameCards = [
           Yarrwin is an informational guide designed to help users understand online gaming platforms. Gaming involves financial risk and should be treated as entertainment, not a source of income. Set a budget before you play, keep stakes flat, and end sessions on schedule rather than on streaks.
         </p>
         <p class="mt-4 leading-relaxed text-mist-300">
-          If gaming stops feeling like fun, use the platform's built-in tools: deposit limits, session reminders, cool-off periods and self-exclusion are all available from your dashboard. You do not need to contact support to activate any of them — they take effect immediately.
+          If gaming stops feeling like fun, check whether the platform offers deposit limits, session reminders, cool-off periods or self-exclusion in your dashboard. Read the current terms and contact the platform support route if you need help activating a tool.
         </p>
       </div>
       <div class="glass rounded-3xl p-6">

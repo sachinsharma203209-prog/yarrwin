@@ -1,5 +1,6 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import Phase2Appendix from "../../components/Phase2Appendix.astro";
 import SectionHeading from "../../components/SectionHeading.astro";
 import Icon from "../../components/Icon.astro";
 import FaqAccordion from "../../components/FaqAccordion.astro";
@@ -126,7 +127,7 @@ const howToSchema = {
   description="Step-by-step beginner guide: register securely, fund your wallet, understand WinGo & lottery odds, place your first bet and withdraw safely on Yarrwin."
   ogImage="/og/guide.png"
   keywords="how to play Yarrwin, WinGo beginner guide, online lottery tutorial, safe gameplay guide, wallet management"
-  schema={[breadcrumb, faqSchema, howToSchema]}
+  schema={[breadcrumb, faqSchema]}
 >
   <!-- Page head -->
   <section class="container-site pt-10 md:pt-14">
@@ -248,4 +249,5 @@ const howToSchema = {
     title="Six steps done? Time for a live draw."
     sub="Watch the archive for five minutes, pick a steady market, and start with stakes that don't sting."
   />
+  <Phase2Appendix topic="how to play Yarrwin games" links={[{href:"/games/",label:"Games Hub"},{href:"/games/wingo/",label:"WinGo"},{href:"/games/k3/",label:"K3"},{href:"/games/5d/",label:"5D"},{href:"/games/aviator/",label:"Aviator"},{href:"/results/",label:"results"},{href:"/responsible-gaming/",label:"responsible gaming"}]} />
 </BaseLayout>
