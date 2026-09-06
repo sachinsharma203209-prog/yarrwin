@@ -49,9 +49,12 @@ const canonical = canonicalProp
   : new URL(normalizedPath, SITE_URL).href;
 const ogImage = image ?? "/og/default.png";
 const ogImageUrl = new URL(ogImage, SITE_URL).href;
-const seoDescription = description.length < 120
+const expandedDescription = description.length < 120
   ? `${description} Read the page-specific checks and safety notes before acting.`
   : description;
+const seoDescription = expandedDescription.length > 155
+  ? `${expandedDescription.slice(0, 152).replace(/\s+\S*$/, "")}...`
+  : expandedDescription;
 const robotsContent = noindex
   ? "noindex, nofollow"
   : robots ?? "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1";
