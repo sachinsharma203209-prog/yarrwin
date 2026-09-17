@@ -2,4 +2,4 @@ User-agent: *
 Allow: /
 Disallow: /admin/
 
-Sitemap: https://yarrwin.online/sitemap-index.xml
+Sitemap: https://yaarwin.game/page-sitemap.xml
